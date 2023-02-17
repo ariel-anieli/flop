@@ -64,7 +64,8 @@ split_by_tag(Type)   -> gen_server:call(?MODULE, #{request=>'split by tag',
 						   type=>Type}).
 vlan(Type)           -> gen_server:call(?MODULE, #{request=>vlan, 
 						   type=>Type}).
-print(Expr)          -> gen_server:call(?MODULE, #{request=>print, expr=>Expr}).
+print(Cmds)          -> gen_server:call(?MODULE, #{request=>print, 
+						   cmds=>Cmds}).
     
 
 init(DB) -> 
@@ -442,8 +443,8 @@ handle_call(#{request:=save}, _From, OldDB) ->
 
     {reply, Rslt, maps:get(db, Rslt)};
 
-handle_call(#{request:=print, expr:=Expr}, _From, DB) -> 
-    [Values] = maps:values(Expr),
+handle_call(#{request:=print, cmds:=Cmds}, _From, DB) -> 
+    [Values] = maps:values(Cmds),
     Text     = lists:concat(lists:join("\n", Values)),
     io:format("~s~n", [Text]),
 
