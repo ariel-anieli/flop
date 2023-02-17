@@ -73,13 +73,6 @@ init(DB) ->
 pipe(Arg, Funcs) -> 
     lists:foldl(fun(Func, Arg) -> Func(Arg) end, Arg, Funcs).
 
-or_get_default_value({badmap, _}, Default) ->
-    Default;
-or_get_default_value({badkey, _}, Default) ->
-    Default;
-or_get_default_value(Value, _) ->
-    Value.
-
 hash(Term) ->
     pipe(
      Term,
