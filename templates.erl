@@ -1,5 +1,5 @@
 -module(templates).
-
+-define(HASH_METHOD, ripemd160).
 -export([
 	 build_snippet_using_keys/1,
 	 get_db_template/1,
@@ -232,7 +232,7 @@ hash(Term) ->
     pipe(
      Term,
       [
-       fun(Str)  -> crypto:hash(ripemd160, Str) end,
+       fun(Str)  -> crypto:hash(?HASH_METHOD, Str) end,
        fun(Hash) -> binary:encode_hex(Hash) end,
        fun(Hex)  -> binary:bin_to_list(Hex) end,
        fun(Str)  -> string:lowercase(Str) end
