@@ -85,8 +85,10 @@ hash(Term) ->
       ]).
 
 open_db_or_create_from_template({ok, [DB]}, _) ->
-    LinksFromDB = maps:get(links, DB),
-    DB#{links := [tag_link_with_hash_of_addrs(Link) || Link <- LinksFromDB]};
+    Links       = maps:get(links, DB),
+    TaggedLinks = [tag_link_with_hash_of_addrs(Link) || Link <- Links], 
+
+    DB#{links := TaggedLinks};
 
 open_db_or_create_from_template({error, _}, Name) -> 
     get_db_template(Name).
@@ -131,6 +133,7 @@ get_template(#{type:=nxos, request:=vlan}) ->
 get_key(#{key:=desc, link:=Link} = Args) -> 
     Keys = ['to dev', 'to port', name],
     Req  = 'description',
+
     #{
       key => "!desc!",
       val => build_from_link(Args#{keys=>Keys, request=>Req, link=>Link})
@@ -138,6 +141,7 @@ get_key(#{key:=desc, link:=Link} = Args) ->
 
 get_key(#{key:='from port', link:=Link}) -> 
     From = maps:get(from, Link),
+
     #{
       key => "!from-port!",
       val => integer_to_list(maps:get(port, From))
@@ -153,6 +157,7 @@ get_key(#{key:=ip, link:=Link}) ->
     Network  = maps:get(net, Link),
     Pattern  = "[0-9]+/",
     Replace  = "1/",
+
     #{
       key => "!ip!",
       val => re:replace(Network, Pattern, Replace, [{return, list}])
@@ -161,6 +166,7 @@ get_key(#{key:=ip, link:=Link}) ->
 get_key(#{key:=net, link:=Link}) -> 
     Pattern = "\.[0-9]+/[0-9]+",
     String  = maps:get(net, Link),
+
     #{
       key => "!net!",
       val => re:replace(String, Pattern, "", [{return, list}])
@@ -168,6 +174,7 @@ get_key(#{key:=net, link:=Link}) ->
 
 get_key(#{key:='to port', link:=Link}) -> 
     To = maps:get(to, Link),
+
     #{
       key => "!to-port!",
       val => integer_to_list(maps:get(port, To))
@@ -181,6 +188,7 @@ get_key(#{key:=tag, link:=Link}) ->
 
 get_key(#{key:='to dev', link:=Link}) -> 
     To = maps:get(to, Link),
+
     #{
       key => "!to-dev!",
       val => maps:get(dev, To)
@@ -197,6 +205,7 @@ get_key(#{key:='vlans from dev', db:=DB, link:=Link}) ->
     Links = maps:get(links, DB),
     VLANs = [integer_to_list(maps:get(vlan, Link))
 	     || Link <- Links, From=:=maps:get(from,Link)],
+
     #{
       key => "!vlans-from-dev!",
       val => lists:join(",", VLANs)
@@ -207,6 +216,7 @@ get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
     Links = maps:get(links, DB),
     VLANs = [lists:concat(["vlan", maps:get(vlan, Link)])
 	     || Link <- Links, Tag=:=maps:get(tag,Link)],
+
     #{
       key => "!vlans-from-vrf!",
       val => lists:join(" ", VLANs)
@@ -215,18 +225,17 @@ get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
 get_key(#{key:=vrf, link:=Link} = Args) -> 
     Keys = [name, tag],
     Req  = 'split by tag',
+
     #{
       key => "!vrf!",
       val => build_from_link(Args#{keys=>Keys, request=>Req, link=>Link})
     }.
 
 map_keyset_into_template(#{keyset:=KeySet, template:=Temp}) ->
-    lists:foldr(
-      fun(#{key:=Key, val:=Val}, Temp) -> 
-	      re:replace(Temp, Key, Val, [{return, list}]) end,
-      Temp, 
-      KeySet
-     ).
+    ReplaceKwithVal = fun(#{key:=Key, val:=Val}, Temp) -> 
+			      re:replace(Temp, Key, Val, [{return, list}]) end,
+
+    lists:foldr(ReplaceKwithVal, Temp, KeySet).
 
 build_from_link(#{keys:=Keys} = Args) ->
     map_keyset_into_template(
@@ -245,16 +254,19 @@ build_snippet_using_keys(#{db:=DB} = Args) ->
 
 is_link(Link, UserID) -> 
     ID = maps:get(id, Link),
+
     match=:=is_match(search_user_input_in_id(ID, UserID)).
 
 is_not_link(Link, UserID) -> 
     ID = maps:get(id, Link),
+
     nomatch=:=is_match(search_user_input_in_id(ID, UserID)).
 
 is_match(nomatch)    -> nomatch;
 is_match({match, _}) -> match.
 
-search_user_input_in_id(ID, UserID) -> re:run(ID, string:concat("^", UserID)).
+search_user_input_in_id(ID, UserID) -> 
+    re:run(ID, string:concat("^", UserID)).
 
 find_matching_link(DB, UserID) ->
     [Link || Link <- maps:get(links, DB), is_link(Link, UserID)].
@@ -286,10 +298,12 @@ get_random_mac_addr() ->
 
 get_random_str(Length) ->
     CharSet = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+
     get_random(Length, CharSet).
 
 get_random(Length, CharSet) ->
     MaxLength = length(CharSet),
+
     lists:foldl(
       fun(_, Acc) ->
 	      [lists:nth(crypto:rand_uniform(1, MaxLength), CharSet)] ++ Acc end,
@@ -321,6 +335,7 @@ get_link_template() ->
 
 if_needed_update_and_log(OldLink, Key, Val) when map_get(Key,OldLink)==Val ->
     OldLink;
+
 if_needed_update_and_log(OldLink, Key, Val) when map_get(Key,OldLink)/=Val ->
     NewLink = maps:update(Key, Val, OldLink),   
     OldLog  = maps:get(log, NewLink, []),
@@ -331,13 +346,16 @@ if_needed_update_and_log(OldLink, Key, Val) when map_get(Key,OldLink)/=Val ->
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
+
     OldDB#{links := lists:append(OldLinkList, [Link])};
+
 create_link(OldDB, _, [_]) -> 
     OldDB.
 
 update_time_and_id(OldDB, NewID) ->
     Time  = #{'@' => time_in_iso8601()},
     NewDB = maps:merge(OldDB, Time),
+
     maps:merge(NewDB, #{id => NewID}).
 
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
@@ -355,19 +373,17 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
     #{status=>Status, db=>NewDB};
 
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
-    
     #{status=>no_diff, db=>OldDB}.
 
 handle_call(#{request:=template_db}, _From, DB) -> 
     Time = erlang:system_time(second),
+
     {reply, get_db_template(erlang:integer_to_list(Time)), DB};
 
 handle_call(#{request:=template_link}, _From, DB) -> 
-
     {reply, get_link_template(), DB};
 
 handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) -> 
-
     TaggedLink   = tag_link_with_hash_of_addrs(UntaggedLink),
     TaggedLinkID = maps:get(id, TaggedLink),
     MatchingLnks = find_matching_link(OldDB, TaggedLinkID),
@@ -376,11 +392,9 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
     {reply, NewDB, NewDB};
 
 handle_call(#{request:=read}, _From, DB) -> 
-    
     {reply, DB, DB};
 
 handle_call(#{request:=update, id:=UserID, key:=Key, val:=Val}, _From, OldDB) ->
-
     Updated       = [if_needed_update_and_log(Link, Key, Val)
 		     || Link <- find_matching_link(OldDB, UserID)],
     AllButUpdated = find_not_matching_links(OldDB, UserID),
@@ -451,7 +465,6 @@ handle_call(#{request:=print, cmds:=Cmds}, _From, DB) ->
     {reply, done, DB};
 
 handle_call(#{request:=stop}, _From, DB) ->
-    
     {stop, normal, stopped, DB}.
 
 handle_cast(_Msg, DB)            -> {noreply, DB}.
