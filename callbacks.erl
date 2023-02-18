@@ -4,19 +4,25 @@
 -import(
    helpers,
    [
-    build_snippet_using_keys/1,
     create_link/3,
-    get_db_template/1,
-    get_link_template/0,
     get_template/1,
     get_key/1,
     find_matching_link/2,
     find_not_matching_links/2,
-    hash/1,
     if_needed_update_and_log/3,
     open_db_or_create_from_template/2,
     pipe/2,
-    save_db_if_ids_differ/3,
+    save_db_if_ids_differ/3
+   ]
+).
+
+-import(
+   templates,
+   [
+    build_snippet_using_keys/1,
+    get_db_template/1,
+    get_link_template/0,
+    hash/1,
     tag_link_with_hash_of_addrs/1
    ]
 ).
