@@ -12,6 +12,7 @@
 	 hash/1,
 	 if_needed_update_and_log/3,
 	 open_db_or_create_from_template/2,
+	 pipe/2,
 	 save_db_if_ids_differ/3,
 	 tag_link_with_hash_of_addrs/1
 ]).
