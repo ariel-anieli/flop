@@ -64,7 +64,7 @@ split_by_tag(Type)   -> gen_server:call(?MODULE, #{request=>'split by tag',
 						   type=>Type}).
 vlan(Type)           -> gen_server:call(?MODULE, #{request=>vlan, 
 						   type=>Type}).
-print(Cmds)          -> gen_server:call(?MODULE, #{request=>print, 
+print(Cmds)          -> gen_server:cast(?MODULE, #{request=>print, 
 						   cmds=>Cmds}).
     
 
@@ -457,17 +457,16 @@ handle_call(#{request:=save}, _From, OldDB) ->
 
     {reply, Rslt, maps:get(db, Rslt)};
 
-handle_call(#{request:=print, cmds:=Cmds}, _From, DB) -> 
+handle_call(#{request:=stop}, _From, DB) ->
+    {stop, normal, stopped, DB}.
+
+handle_cast(#{request:=print, cmds:=Cmds}, DB) -> 
     [Values] = maps:values(Cmds),
     Text     = lists:concat(lists:join("\n", Values)),
     io:format("~s~n", [Text]),
 
-    {reply, done, DB};
+    {noreply, DB}.
 
-handle_call(#{request:=stop}, _From, DB) ->
-    {stop, normal, stopped, DB}.
-
-handle_cast(_Msg, DB)            -> {noreply, DB}.
 handle_info(_Info, DB)	         -> {noreply, DB}.
 terminate(_Reason, _DB)	         -> ok.
 code_change(_OldVsn, DB, _Extra) -> {ok, DB}.
