@@ -9,7 +9,7 @@
     get_key/1,
     find_matching_link/2,
     find_not_matching_links/2,
-    if_needed_update_and_log/3,
+    if_needed_update_and_log/1,
     open_db_or_create_from_template/2,
     pipe/2,
     save_db_if_ids_differ/3
@@ -58,13 +58,31 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
 handle_call(#{request:=read}, _From, DB) -> 
     {reply, DB, DB};
 
-handle_call(#{request:=update, id:=UserID, key:=Key, val:=Val}, _From, OldDB) ->
-    Updated       = [if_needed_update_and_log(Link, Key, Val)
-		     || Link <- find_matching_link(OldDB, UserID)],
-    AllButUpdated = find_not_matching_links(OldDB, UserID),
-    NewDB         = OldDB#{links := lists:append(Updated, AllButUpdated)},
+handle_call(#{request:=update, id:=UserID, key:=Key, val:=Val}=Args,
+	    From, OldDB) ->
+    Validity = fun(Terms) -> lists:all(fun(Term) -> Term==true end, Terms) end,
+    Contract = 
+	#{
+	  vlan => 
+	      fun(Val) -> Validity([is_integer(Val), Val<4095, Val>=0]) end
+	 },
+    Faults  = 
+	#{
+	  vlan => 'wrong value: is_integer(vlan) and vlan<4095 and vlan>=0'
+	 },
 
-    {reply, NewDB, NewDB};
+    UpdateResult = [if_needed_update_and_log(
+		      Args#{link     => Link, 
+			    contract => Contract,
+			    faults   => Faults
+			   })
+		    || Link <- find_matching_link(OldDB, UserID)],
+
+    [#{link:=Updated, status:=Status}]= UpdateResult,
+    AllButUpdated = find_not_matching_links(OldDB, UserID),
+    NewDB         = OldDB#{links := lists:append([Updated], AllButUpdated)},
+
+    {reply, #{db=>NewDB, status=>Status}, NewDB};
 
 handle_call(#{request:=delete, id:=UserID}, _From, OldDB) -> 
     AllButDeletedLink = find_not_matching_links(OldDB, UserID),

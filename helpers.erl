@@ -14,7 +14,7 @@
 	 create_link/3,
 	 find_matching_link/2,
 	 find_not_matching_links/2,
-	 if_needed_update_and_log/3,
+	 if_needed_update_and_log/1,
 	 open_db_or_create_from_template/2,
 	 pipe/2,
 	 save_db_if_ids_differ/3
@@ -57,16 +57,42 @@ find_not_matching_links(DB, UserID) ->
 time_in_iso8601() ->
     calendar:system_time_to_rfc3339(erlang:system_time(second)).
 
-if_needed_update_and_log(OldLink, Key, Val) when map_get(Key,OldLink)==Val ->
-    OldLink;
+if_needed_update_and_log(#{key:=Key, contract:=Contract, link:=OldLink}) 
+  when not is_map_key(Key, Contract) ->
+    #{
+      link   => OldLink,
+      status => 'not allowed'
+     };
 
-if_needed_update_and_log(OldLink, Key, Val) when map_get(Key,OldLink)/=Val ->
+if_needed_update_and_log(#{link:=OldLink, key:=Key, val:=Val}) 
+  when map_get(Key,OldLink)==Val ->
+    #{
+      link   => OldLink,
+      status => 'same value'
+     };
+
+if_needed_update_and_log(#{contract:=Contract, val:=Val, key:=Key}=Args) ->
+    IsConform = maps:get(Key, Contract),
+    if_conform_update_and_log(Args#{conform=>IsConform(Val)}).
+
+if_conform_update_and_log(#{conform:=true, link:=OldLink, 
+			    key:=Key, val:=Val}) ->
     NewLink = maps:update(Key, Val, OldLink),   
     OldLog  = maps:get(log, NewLink, []),
     NewLog  = [#{Key => maps:get(Key, OldLink), 
 		 until=> time_in_iso8601()} | OldLog],
 
-    tag_link_with_hash_of_addrs(NewLink#{log => NewLog}).
+    #{
+      link   => tag_link_with_hash_of_addrs(NewLink#{log => NewLog}),
+      status => ok
+     };
+
+if_conform_update_and_log(#{conform:=false, link:=OldLink, 
+			    key:=Key, faults:=Faults}) ->
+    #{
+      link   => OldLink,
+      status => maps:get(Key, Faults)
+     }.
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
