@@ -60,25 +60,13 @@ handle_call(#{request:=read}, _From, DB) ->
 
 handle_call(#{request:=update, id:=UserID, key:=Key, val:=Val}=Args,
 	    From, OldDB) ->
-    Validity = fun(Terms) -> lists:all(fun(Term) -> Term==true end, Terms) end,
-    Contract = 
-	#{
-	  vlan => 
-	      fun(Val) -> Validity([is_integer(Val), Val<4095, Val>=0]) end
-	 },
-    Faults  = 
-	#{
-	  vlan => 'wrong value: is_integer(vlan) and vlan<4095 and vlan>=0'
-	 },
-
     UpdateResult = [if_needed_update_and_log(
 		      Args#{link     => Link, 
-			    contract => Contract,
-			    faults   => Faults
+			    contract => get_contracts(),
+			    faults   => get_faults()
 			   })
 		    || Link <- find_matching_link(OldDB, UserID)],
-
-    [#{link:=Updated, status:=Status}]= UpdateResult,
+    [#{link:=Updated, status:=Status}] = UpdateResult,
     AllButUpdated = find_not_matching_links(OldDB, UserID),
     NewDB         = OldDB#{links := lists:append([Updated], AllButUpdated)},
 
@@ -152,3 +140,27 @@ handle_cast(#{request:=print, cmds:=Cmds}, DB) ->
 handle_info(_Info, DB)	         -> {noreply, DB}.
 terminate(_Reason, _DB)	         -> ok.
 code_change(_OldVsn, DB, _Extra) -> {ok, DB}.
+
+is_valid(Term) when is_boolean(Term) -> 
+    Term==true;
+	     
+is_valid(Terms) when is_list(Terms) -> 
+    lists:all(fun(Term) -> Term==true end, Terms).
+
+is_string(String) ->
+    re:run(String, "^[a-z0-9A-Z]+$", [{capture, none}])==match.
+
+get_tag_contract(Tag) ->
+    is_valid(is_list(Tag) andalso is_string(Tag)).
+
+get_contracts() -> 
+    #{
+      tag  => fun(Tag) -> get_tag_contract(Tag) end,
+      vlan => fun(Val) -> is_valid([is_integer(Val), Val<4095, Val>=0]) end
+     }.
+
+get_faults() -> 
+    #{
+      tag  => 'wrong value: tag is a string',
+      vlan => 'wrong value: is_integer(vlan) and vlan<4095 and vlan>=0'
+     }.
