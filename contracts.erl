@@ -54,6 +54,7 @@ get_endpoint_contract(_) ->
 
 get_contracts() -> 
     #{
+      to   => fun(End) -> get_endpoint_contract(End) end,
       from => fun(End) -> get_endpoint_contract(End) end,
       net  => fun(Net) -> get_net_contract(Net) end,
       tag  => fun(Tag) -> get_tag_contract(Tag) end,
@@ -62,6 +63,7 @@ get_contracts() ->
 
 get_faults() -> 
     #{
+      to   => 'Wrong value; for an example, run flop:template_link()',
       from => 'Wrong value; for an example, run flop:template_link()',
       net  => 'Must be IPv4/Mask; for an example, run flop:template_link()',
       tag  => 'Must be a string',
