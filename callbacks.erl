@@ -150,17 +150,37 @@ is_valid(Terms) when is_list(Terms) ->
 is_string(String) ->
     re:run(String, "^[a-z0-9A-Z]+$", [{capture, none}])==match.
 
+is_like_addr_with_mask([AddrAsString|[MaskAsString]], true) ->
+    {ok, Addr} = inet:parse_address(AddrAsString),
+    Mask = erlang:list_to_integer(MaskAsString),
+
+    inet:is_ipv4_address(Addr) andalso Mask<33 andalso Mask>=0;
+
+is_like_addr_with_mask(_, false) ->
+    false.
+
+is_net(String) ->
+    HasGoodFmt  = re:run(String, "^[0-9\.]+/[0-9]+$", [{capture, none}])==match,
+    AddrAndMask = re:split(String, "/", [{return, list}]),
+
+    is_like_addr_with_mask(AddrAndMask, HasGoodFmt).
+
 get_tag_contract(Tag) ->
     is_valid(is_list(Tag) andalso is_string(Tag)).
 
+get_net_contract(Net) ->
+    is_valid(is_list(Net) andalso is_net(Net)).
+
 get_contracts() -> 
     #{
+      net  => fun(Net) -> get_net_contract(Net) end,
       tag  => fun(Tag) -> get_tag_contract(Tag) end,
       vlan => fun(Val) -> is_valid([is_integer(Val), Val<4095, Val>=0]) end
      }.
 
 get_faults() -> 
     #{
-      tag  => 'wrong value: tag is a string',
-      vlan => 'wrong value: is_integer(vlan) and vlan<4095 and vlan>=0'
+      net  => 'net must be IPv4',
+      tag  => 'tag must be a string',
+      vlan => 'vlan must be an integer: <4095 and >=0'
      }.
