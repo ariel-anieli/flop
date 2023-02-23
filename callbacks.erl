@@ -2,6 +2,14 @@
 -behaviour(gen_server).
 
 -import(
+   contracts,
+   [
+    get_contracts/0,
+    get_faults/0
+   ]
+  ).
+	
+-import(
    helpers,
    [
     create_link/3,
@@ -12,7 +20,9 @@
     if_needed_update_and_log/1,
     open_db_or_create_from_template/2,
     pipe/2,
-    save_db_if_ids_differ/3
+    save_db_if_ids_differ/3,
+    act_if_match_found/2,
+    if_act_done_update_db/3
    ]
 ).
 
@@ -58,17 +68,16 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
 handle_call(#{request:=read}, _From, DB) -> 
     {reply, DB, DB};
 
-handle_call(#{request:=update, id:=UserID, key:=Key, val:=Val}=Args,
+handle_call(#{request:=update, id:=UserID}=Args,
 	    From, OldDB) ->
-    UpdateResult = [if_needed_update_and_log(
-		      Args#{link     => Link, 
-			    contract => get_contracts(),
-			    faults   => get_faults()
-			   })
-		    || Link <- find_matching_link(OldDB, UserID)],
-    [#{link:=Updated, status:=Status}] = UpdateResult,
-    AllButUpdated = find_not_matching_links(OldDB, UserID),
-    NewDB         = OldDB#{links := lists:append([Updated], AllButUpdated)},
+    AugmtArgs = Args#{contract=>get_contracts(), faults=>get_faults()},
+    UpdOrLog  = fun(Link) -> 
+			if_needed_update_and_log(AugmtArgs#{link=>Link}) end,
+    UpdResult = act_if_match_found(UpdOrLog, find_matching_link(OldDB, UserID)),
+
+    #{status:=Status} = UpdResult,
+    AllButUpdated     = find_not_matching_links(OldDB, UserID),
+    NewDB = if_act_done_update_db(OldDB, AllButUpdated, UpdResult),
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
@@ -141,46 +150,4 @@ handle_info(_Info, DB)	         -> {noreply, DB}.
 terminate(_Reason, _DB)	         -> ok.
 code_change(_OldVsn, DB, _Extra) -> {ok, DB}.
 
-is_valid(Term) when is_boolean(Term) -> 
-    Term==true;
-	     
-is_valid(Terms) when is_list(Terms) -> 
-    lists:all(fun(Term) -> Term==true end, Terms).
 
-is_string(String) ->
-    re:run(String, "^[a-z0-9A-Z]+$", [{capture, none}])==match.
-
-is_like_addr_with_mask([AddrAsString|[MaskAsString]], true) ->
-    {ok, Addr} = inet:parse_address(AddrAsString),
-    Mask = erlang:list_to_integer(MaskAsString),
-
-    inet:is_ipv4_address(Addr) andalso Mask<33 andalso Mask>=0;
-
-is_like_addr_with_mask(_, false) ->
-    false.
-
-is_net(String) ->
-    HasGoodFmt  = re:run(String, "^[0-9\.]+/[0-9]+$", [{capture, none}])==match,
-    AddrAndMask = re:split(String, "/", [{return, list}]),
-
-    is_like_addr_with_mask(AddrAndMask, HasGoodFmt).
-
-get_tag_contract(Tag) ->
-    is_valid(is_list(Tag) andalso is_string(Tag)).
-
-get_net_contract(Net) ->
-    is_valid(is_list(Net) andalso is_net(Net)).
-
-get_contracts() -> 
-    #{
-      net  => fun(Net) -> get_net_contract(Net) end,
-      tag  => fun(Tag) -> get_tag_contract(Tag) end,
-      vlan => fun(Val) -> is_valid([is_integer(Val), Val<4095, Val>=0]) end
-     }.
-
-get_faults() -> 
-    #{
-      net  => 'net must be IPv4',
-      tag  => 'tag must be a string',
-      vlan => 'vlan must be an integer: <4095 and >=0'
-     }.

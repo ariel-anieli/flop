@@ -17,7 +17,9 @@
 	 if_needed_update_and_log/1,
 	 open_db_or_create_from_template/2,
 	 pipe/2,
-	 save_db_if_ids_differ/3
+	 save_db_if_ids_differ/3,
+	 act_if_match_found/2,
+	 if_act_done_update_db/3
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -124,3 +126,16 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
 
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
     #{status=>no_diff, db=>OldDB}.
+
+act_if_match_found(Act, [Link]) when is_map(Link) ->
+    Act(Link);
+
+act_if_match_found(Act, []) ->
+    #{status=>'not found'}.
+
+if_act_done_update_db(OldDB, Links, #{status:=ok, link:=NewLink}) ->
+    NewList = lists:append(Links, [NewLink]),
+    OldDB#{links := NewList};
+
+if_act_done_update_db(OldDB, Links, #{status:=_}) ->
+    OldDB.
