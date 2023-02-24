@@ -22,7 +22,8 @@
     pipe/2,
     save_db_if_ids_differ/3,
     act_if_match_found/2,
-    if_act_done_update_db/3
+    if_act_done_update_db/3,
+    if_act_done_delete_from_db/3
    ]
 ).
 
@@ -81,11 +82,16 @@ handle_call(#{request:=update, id:=UserID}=Args,
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
-handle_call(#{request:=delete, id:=UserID}, _From, OldDB) -> 
+handle_call(#{request:=delete, id:=UserID}, From, OldDB) -> 
+    %% AllButDeletedLink = find_not_matching_links(OldDB, UserID),
+    %% NewDB             = OldDB#{links := AllButDeletedLink},
+    TagForDel = fun(Link) -> #{link=>Link, status=>ok} end,
+    DelResult = act_if_match_found(TagForDel, find_matching_link(OldDB, UserID)),
+    #{status:=Status} = DelResult,
     AllButDeletedLink = find_not_matching_links(OldDB, UserID),
-    NewDB             = OldDB#{links := AllButDeletedLink},
+    NewDB = if_act_done_delete_from_db(OldDB, AllButDeletedLink, DelResult),
 
-    {reply, NewDB, NewDB};
+    {reply, #{db=>NewDB, status=>Status}, NewDB};
 
 handle_call(#{request:=description, type:=nxos} = Args, _From, DB) -> 
     Keys  = [name, 'to port', 'to dev'],

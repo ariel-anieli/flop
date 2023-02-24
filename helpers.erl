@@ -19,7 +19,8 @@
 	 pipe/2,
 	 save_db_if_ids_differ/3,
 	 act_if_match_found/2,
-	 if_act_done_update_db/3
+	 if_act_done_update_db/3,
+	 if_act_done_delete_from_db/3
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -141,4 +142,10 @@ if_act_done_update_db(OldDB, Links, #{status:=ok, link:=NewLink}) ->
     OldDB#{links := NewList};
 
 if_act_done_update_db(OldDB, Links, #{status:=_}) ->
+    OldDB.
+
+if_act_done_delete_from_db(OldDB, Links, #{status:=ok}) ->
+    OldDB#{links := Links};
+
+if_act_done_delete_from_db(OldDB, Links, #{status:=_}) ->
     OldDB.
