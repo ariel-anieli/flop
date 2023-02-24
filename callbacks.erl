@@ -83,8 +83,6 @@ handle_call(#{request:=update, id:=UserID}=Args,
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
 handle_call(#{request:=delete, id:=UserID}, From, OldDB) -> 
-    %% AllButDeletedLink = find_not_matching_links(OldDB, UserID),
-    %% NewDB             = OldDB#{links := AllButDeletedLink},
     TagForDel = fun(Link) -> #{link=>Link, status=>ok} end,
     DelResult = act_if_match_found(TagForDel, find_matching_link(OldDB, UserID)),
     #{status:=Status} = DelResult,
