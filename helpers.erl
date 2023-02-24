@@ -127,10 +127,13 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
     #{status=>no_diff, db=>OldDB}.
 
+act_if_match_found(_, Links) when is_list(Links), length(Links)>1 ->
+    #{status=>'nore than one match'};
+
 act_if_match_found(Act, [Link]) when is_map(Link) ->
     Act(Link);
 
-act_if_match_found(Act, []) ->
+act_if_match_found(_, []) ->
     #{status=>'not found'}.
 
 if_act_done_update_db(OldDB, Links, #{status:=ok, link:=NewLink}) ->
