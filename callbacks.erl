@@ -62,9 +62,10 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
     TaggedLink   = tag_link_with_hash_of_addrs(UntaggedLink),
     TaggedLinkID = maps:get(id, TaggedLink),
     MatchingLnks = find_matching_link(OldDB, TaggedLinkID),
-    NewDB        = create_link(OldDB, TaggedLink, MatchingLnks),
+    CreateResult = create_link(OldDB, TaggedLink, MatchingLnks),
+    #{db:=NewDB, status:=Status} = CreateResult,
 
-    {reply, NewDB, NewDB};
+    {reply, #{db=>NewDB, status=>Status}, NewDB};
 
 handle_call(#{request:=read}, _From, DB) -> 
     {reply, DB, DB};

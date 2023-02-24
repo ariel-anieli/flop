@@ -99,11 +99,11 @@ if_conform_update_and_log(#{conform:=false, link:=OldLink,
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
-
-    OldDB#{links := lists:append(OldLinkList, [Link])};
+    NewDB = OldDB#{links := lists:append(OldLinkList, [Link])},
+    #{db=>NewDB, status=>ok};
 
 create_link(OldDB, _, [_]) -> 
-    OldDB.
+    #{db=>OldDB, status=>ok}.
 
 update_time_and_id(OldDB, NewID) ->
     Time  = #{'@' => time_in_iso8601()},
