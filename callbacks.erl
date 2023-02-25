@@ -23,7 +23,8 @@
     save_db_if_ids_differ/3,
     act_if_match_found/2,
     if_act_done_update_db/3,
-    if_act_done_delete_from_db/3
+    if_act_done_delete_from_db/3,
+    if_conform_tag_link_and_add_to_db/1
    ]
 ).
 
@@ -59,11 +60,14 @@ handle_call(#{request:=template_link}, _From, DB) ->
     {reply, get_link_template(), DB};
 
 handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) -> 
-    TaggedLink   = tag_link_with_hash_of_addrs(UntaggedLink),
-    TaggedLinkID = maps:get(id, TaggedLink),
-    MatchingLnks = find_matching_link(OldDB, TaggedLinkID),
-    CreateResult = create_link(OldDB, TaggedLink, MatchingLnks),
-    #{db:=NewDB, status:=Status} = CreateResult,
+    IsLink       = maps:get(link, get_contracts()),
+    CreateResult = if_conform_tag_link_and_add_to_db(#{
+		     faults  => get_faults(),
+		     conform => IsLink(UntaggedLink),
+		     link    => UntaggedLink,
+		     db      => OldDB
+		    }),
+    #{db:=NewDB, status:=Status} = CreateResult,    
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 

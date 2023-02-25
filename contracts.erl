@@ -52,17 +52,33 @@ get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End)
 get_endpoint_contract(_) ->
     false.
 
+get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan} = End)
+  when map_size(End)==5 ->
+    IsConform = fun(Key) -> 
+			Contracts = get_contracts(),
+			Check     = maps:get(Key, Contracts),
+			Value     = maps:get(Key, End),   
+			Check(Value)
+		end,
+
+    is_valid([IsConform(Key) || Key <- maps:keys(End)]);
+
+get_link_contract(_) ->
+    false.
+
 get_contracts() -> 
     #{
-      to   => fun(End) -> get_endpoint_contract(End) end,
-      from => fun(End) -> get_endpoint_contract(End) end,
-      net  => fun(Net) -> get_net_contract(Net) end,
-      tag  => fun(Tag) -> get_tag_contract(Tag) end,
+      link => fun(Link) -> get_link_contract(Link) end,
+      to   => fun(End)  -> get_endpoint_contract(End) end,
+      from => fun(End)  -> get_endpoint_contract(End) end,
+      net  => fun(Net)  -> get_net_contract(Net) end,
+      tag  => fun(Tag)  -> get_tag_contract(Tag) end,
       vlan => fun(Vlan) -> get_vlan_contract(Vlan) end
      }.
 
 get_faults() -> 
     #{
+      link => 'Wrong value; for an example, run flop:template_link()',
       to   => 'Wrong value; for an example, run flop:template_link()',
       from => 'Wrong value; for an example, run flop:template_link()',
       net  => 'Must be IPv4/Mask; for an example, run flop:template_link()',

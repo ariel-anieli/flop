@@ -20,7 +20,8 @@
 	 save_db_if_ids_differ/3,
 	 act_if_match_found/2,
 	 if_act_done_update_db/3,
-	 if_act_done_delete_from_db/3
+	 if_act_done_delete_from_db/3,
+	 if_conform_tag_link_and_add_to_db/1
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -59,6 +60,17 @@ find_not_matching_links(DB, UserID) ->
 
 time_in_iso8601() ->
     calendar:system_time_to_rfc3339(erlang:system_time(second)).
+
+if_conform_tag_link_and_add_to_db(#{link:=Link, db:=OldDB, conform:=true}) ->
+    TaggedLink   = tag_link_with_hash_of_addrs(Link),
+    TaggedLinkID = maps:get(id, TaggedLink),
+    MatchingLnks = find_matching_link(OldDB, TaggedLinkID),
+
+    create_link(OldDB, TaggedLink, MatchingLnks);
+
+if_conform_tag_link_and_add_to_db(#{db:=OldDB, conform:=false, faults:=Faults}) ->
+    #{db=>OldDB, status=>maps:get(link, Faults)}.
+    
 
 if_needed_update_and_log(#{key:=Key, contract:=Contract, link:=OldLink}) 
   when not is_map_key(Key, Contract) ->
@@ -103,7 +115,7 @@ create_link(OldDB, Link, []) ->
     #{db=>NewDB, status=>ok};
 
 create_link(OldDB, _, [_]) -> 
-    #{db=>OldDB, status=>ok}.
+    #{db=>OldDB, status=>'already in db'}.
 
 update_time_and_id(OldDB, NewID) ->
     Time  = #{'@' => time_in_iso8601()},
