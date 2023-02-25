@@ -138,7 +138,7 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
     #{status=>Status, db=>NewDB};
 
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
-    #{status=>no_diff, db=>OldDB}.
+    #{status=>'no diff', db=>OldDB}.
 
 act_if_match_found(_, Links) when is_list(Links), length(Links)>1 ->
     #{status=>'nore than one match'};

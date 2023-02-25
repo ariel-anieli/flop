@@ -10,99 +10,105 @@ You may start the server from an existing database, or an empty one:
 #{file => "foo",
   links =>
       [#{from =>
-             #{addr => "6e:bb:ee:b9:4e:89",dev => "QtaXf3du",port => 142},
-         id => "2152e93a832bc38bc08d0209ecf0e600d03d718a",
-         net => "146.80.48.247/24",tag => "zkmN",
+             #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
+         id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
+         net => "171.175.170.98/24",tag => "s7vr",
          to =>
-             #{addr => "65:f8:b9:5e:ce:71",dev => "nHkHdyBI",port => 100},
-         vlan => 2525}],
-  name => "Xm6M"}
+             #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
+         vlan => 166}],
+  name => "JtBP"}
 ```
 From a template, you may create a link:
 ```
 > Link = flop:template_link().
 #{from =>
-      #{addr => "36:36:8a:bc:f3:b3",dev => "zFndj2dc",port => 213},
-  net => "186.49.222.41/24",tag => "Cd5U",
+      #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
+  net => "12.210.239.42/24",tag => "gwTp",
   to =>
-      #{addr => "97:6c:1e:be:56:7e",dev => "A8YcaJHz",port => 23},
-  vlan => 1925}
+      #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
+  vlan => 3451}
 
 > flop:create(Link).
-#{file => "foo",
-  links =>
-      [#{from =>
-             #{addr => "6e:bb:ee:b9:4e:89",dev => "QtaXf3du",port => 142},
-         id => "2152e93a832bc38bc08d0209ecf0e600d03d718a",
-         net => "146.80.48.247/24",tag => "zkmN",
-         to =>
-             #{addr => "65:f8:b9:5e:ce:71",dev => "nHkHdyBI",port => 100},
-         vlan => 2525},
-       #{from =>
-             #{addr => "36:36:8a:bc:f3:b3",dev => "zFndj2dc",port => 213},
-         id => "f6e98bb3140a236e95aef2520217f4db429d09cd",
-         net => "186.49.222.41/24",tag => "Cd5U",
-         to =>
-             #{addr => "97:6c:1e:be:56:7e",dev => "A8YcaJHz",port => 23},
-         vlan => 1925}],
-  name => "Xm6M"}
+#{db =>
+      #{file => "foo",
+        links =>
+            [#{from =>
+                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
+               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
+               net => "171.175.170.98/24",tag => "s7vr",
+               to =>
+                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
+               vlan => 166},
+             #{from =>
+                   #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
+               id => "67bd0e177728f6e9246ab9ec7fd921f8c41f7871",
+               net => "12.210.239.42/24",tag => "gwTp",
+               to =>
+                   #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
+               vlan => 3451}],
+        name => "JtBP"},
+  status => ok}
 ```
 Update a link (using its ID)
 ```
-> flop:update("215", tag, "bar").
-#{file => "foo",
-  links =>
-      [#{from =>
-             #{addr => "6e:bb:ee:b9:4e:89",dev => "QtaXf3du",port => 142},
-         id => "2152e93a832bc38bc08d0209ecf0e600d03d718a",
-         log =>
-             [#{tag => "zkmN",until => "2023-02-17T07:57:44+01:00"}],
-         net => "146.80.48.247/24",tag => "bar",
-         to =>
-             #{addr => "65:f8:b9:5e:ce:71",dev => "nHkHdyBI",port => 100},
-         vlan => 2525},
-       #{from =>
-             #{addr => "36:36:8a:bc:f3:b3",dev => "zFndj2dc",port => 213},
-         id => "f6e98bb3140a236e95aef2520217f4db429d09cd",
-         net => "186.49.222.41/24",tag => "Cd5U",
-         to =>
-             #{addr => "97:6c:1e:be:56:7e",dev => "A8YcaJHz",port => 23},
-         vlan => 1925}],
-  name => "Xm6M"}
+> flop:update("315", tag, "bar").
+#{db =>
+      #{file => "foo",
+        links =>
+            [#{from =>
+                   #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
+               id => "67bd0e177728f6e9246ab9ec7fd921f8c41f7871",
+               net => "12.210.239.42/24",tag => "gwTp",
+               to =>
+                   #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
+               vlan => 3451},
+             #{from =>
+                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
+               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
+               log =>
+                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
+               net => "171.175.170.98/24",tag => "bar",
+               to =>
+                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
+               vlan => 166}],
+        name => "JtBP"},
+  status => ok}
 ```
 Delete a link
 ```
-> flop:delete("f6").
-#{file => "foo",
-  links =>
-      [#{from =>
-             #{addr => "6e:bb:ee:b9:4e:89",dev => "QtaXf3du",port => 142},
-         id => "2152e93a832bc38bc08d0209ecf0e600d03d718a",
-         log =>
-             [#{tag => "zkmN",until => "2023-02-17T07:57:44+01:00"}],
-         net => "146.80.48.247/24",tag => "bar",
-         to =>
-             #{addr => "65:f8:b9:5e:ce:71",dev => "nHkHdyBI",port => 100},
-         vlan => 2525}],
-  name => "Xm6M"}
+> flop:delete("67b").
+#{db =>
+      #{file => "foo",
+        links =>
+            [#{from =>
+                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
+               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
+               log =>
+                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
+               net => "171.175.170.98/24",tag => "bar",
+               to =>
+                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
+               vlan => 166}],
+        name => "JtBP"},
+  status => ok}
 ```
 And save the database
 ```
 > flop:save().
 #{db =>
-      #{'@' => "2023-02-17T08:11:06+01:00",file => "foo",
-        id => "cb4f50c5c5b79d868a4ffaaff7911a0b471ac689",
+      #{'@' => "2023-02-25T14:37:58+01:00",file => "foo",
+        id => "65906485474a9d928d5a2e715a83f4b83381479b",
         links =>
             [#{from =>
-                   #{addr => "6e:bb:ee:b9:4e:89",dev => "QtaXf3du",port => 142},
-               id => "2152e93a832bc38bc08d0209ecf0e600d03d718a",
+                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
+               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
                log =>
-                   [#{tag => "zkmN",until => "2023-02-17T07:57:44+01:00"}],
-               net => "124.89.195.226/24",tag => "N2Me",
+                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
+               net => "171.175.170.98/24",tag => "bar",
                to =>
-                   #{addr => "65:f8:b9:5e:ce:71",dev => "nHkHdyBI",port => 100},
-               vlan => 255}],
-        name => "5I0a"},
+                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
+               vlan => 166}],
+        name => "JtBP"},
   status => ok}
 ```
 ## CLI snippets
