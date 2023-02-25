@@ -123,9 +123,8 @@ The functions expect the atom `nxos`.
 `flop:print/1` prints out the snippets:
 ```
 > flop:print(flop:intf_eth(nxos)).
-interface ethernet 1/142
-     description cx=5I0a;to=nHkHdyBI_100
+interface ethernet 1/125
+     description cx=JtBP;to=zVSGXHf4_89
      switchport mode trunk
-     switchport trunk allowed vlan 255
-done
+     switchport trunk allowed vlan 166
 ```
