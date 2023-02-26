@@ -44,24 +44,22 @@ get_net_contract(Net) ->
 get_vlan_contract(Vlan) ->
     is_valid([is_integer(Vlan), Vlan<4095, Vlan>=0]).
 
-get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End) 
-  when map_size(End)==3->
-    
+get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port}) ->
     is_integer(Port) andalso Port>=0 andalso is_string(Dev) andalso is_mac(Addr);
 
 get_endpoint_contract(_) ->
     false.
 
-get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan} = End)
-  when map_size(End)==5 ->
-    IsConform = fun(Key) -> 
-			Contracts = get_contracts(),
+get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan}=Link)
+  when map_size(Link)==5  ->
+    Contracts = get_contracts(),
+    IsConform = fun(Key) ->
 			Check     = maps:get(Key, Contracts),
-			Value     = maps:get(Key, End),   
+			Value     = maps:get(Key, Link),
 			Check(Value)
 		end,
 
-    is_valid([IsConform(Key) || Key <- maps:keys(End)]);
+    is_valid([IsConform(Key) || Key <- maps:keys(Link)]);
 
 get_link_contract(_) ->
     false.
