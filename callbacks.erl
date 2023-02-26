@@ -71,8 +71,8 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
-handle_call(#{request:=read}, _From, DB) -> 
-    {reply, DB, DB};
+handle_call(#{request:=read}, From, DB) -> 
+    {reply, #{db=>DB, status=>ok}, DB};
 
 handle_call(#{request:=update, id:=UserID}=Args,
 	    From, OldDB) ->
