@@ -44,7 +44,8 @@ get_net_contract(Net) ->
 get_vlan_contract(Vlan) ->
     is_valid([is_integer(Vlan), Vlan<4095, Vlan>=0]).
 
-get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port}) ->
+get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port}) 
+  when map_size(Link)==5 ->
     is_integer(Port) andalso Port>=0 andalso is_string(Dev) andalso is_mac(Addr);
 
 get_endpoint_contract(_) ->
