@@ -44,9 +44,26 @@ get_net_contract(Net) ->
 get_vlan_contract(Vlan) ->
     is_valid([is_integer(Vlan), Vlan<4095, Vlan>=0]).
 
+get_port_contract(Port) ->
+    is_valid([is_integer(Port), Port>=0]).
+
+get_dev_contract(Dev) ->
+    is_string(Dev).
+
+get_addr_contract(Mac) ->
+    is_mac(Mac).
+
 get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End) 
   when map_size(End)==3 ->
-    is_integer(Port) andalso Port>=0 andalso is_string(Dev) andalso is_mac(Addr);
+    %get_port_contract(Port) andalso is_string(Dev) andalso is_mac(Addr);
+    Contracts = get_contracts(),
+    IsConform = fun(Key) ->
+			Check     = maps:get(Key, Contracts),
+			Value     = maps:get(Key, End),
+			Check(Value)
+		end,
+
+    is_valid([IsConform(Key) || Key <- maps:keys(End)]);
 
 get_endpoint_contract(_) ->
     false.
@@ -72,15 +89,21 @@ get_contracts() ->
       from => fun(End)  -> get_endpoint_contract(End) end,
       net  => fun(Net)  -> get_net_contract(Net) end,
       tag  => fun(Tag)  -> get_tag_contract(Tag) end,
-      vlan => fun(Vlan) -> get_vlan_contract(Vlan) end
+      vlan => fun(Vlan) -> get_vlan_contract(Vlan) end,
+      port => fun(Port) -> get_port_contract(Port) end,
+      dev  => fun(Dev)  -> get_dev_contract(Dev) end,
+      addr => fun(Addr) -> get_addr_contract(Addr) end
      }.
 
 get_faults() -> 
     #{
-      link => 'Wrong value; for an example, run flop:template_link()',
-      to   => 'Wrong value; for an example, run flop:template_link()',
-      from => 'Wrong value; for an example, run flop:template_link()',
-      net  => 'Must be IPv4/Mask; for an example, run flop:template_link()',
-      tag  => 'Must be a string',
-      vlan => 'Must be an integer: <4095 and >=0'
+      link  => 'Wrong value; for an example, run flop:template_link()',
+      to    => 'Wrong value; for an example, run flop:template_link()',
+      from  => 'Wrong value; for an example, run flop:template_link()',
+      net   => 'Must be IPv4/Mask; for an example, run flop:template_link()',
+      tag   => 'Must be a string',
+      vlan  => 'Must be an integer: <4095 and >=0',
+      port  => 'Must be an integer: and >=0',
+      dev   => 'Must be a string',
+      addr  => 'Must be a MAC address'
      }.
