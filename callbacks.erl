@@ -86,11 +86,11 @@ handle_call(#{request:=update, id:=UserID,
 		       end
 	       end,
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
+    Contract = maps:get(Key, get_contracts(), fun(Val) -> false end),
     NewArgs  = Args#{
-		     db       => OldDB,
 		     matches  => find_matching_link(OldDB, UserID),
-		     contract => get_contracts(),
-		     faults   => get_faults(),
+		     contract => Contract(Val),
+		     faults   => maps:get(Key, get_faults(), nofault),
 		     shaper   => Shaper(Key, Val)
 		    },
 

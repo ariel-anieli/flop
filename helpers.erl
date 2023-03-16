@@ -76,24 +76,17 @@ if_valid_shape_newlink(#{matches:=Links})
   when is_list(Links), length(Links)>1 ->
     #{status => 'more than one match'};
 if_valid_shape_newlink(#{matches:=[Link]}=Args) 
-  when is_map(Link), not is_map_key(shaper, Args) ->
+  when not is_map_key(shaper, Args) ->
     #{status => ok, link=>Link};
-if_valid_shape_newlink(#{key:=Key, contract:=Contract}) 
-  when not is_map_key(Key, Contract) ->
+if_valid_shape_newlink(#{faults:=nofault}) ->
     #{status => 'not allowed'};
 if_valid_shape_newlink(#{matches:=[OldLink], key:=Key, val:=Val}) 
-  when is_map(OldLink), map_get(Key,OldLink)==Val ->
+  when map_get(Key,OldLink)==Val ->
     #{status => 'same value'};
-if_valid_shape_newlink(#{key:=Key, val:=Val, 
-			 matches:=[OldLink], 
-			 contract:=Contract,
-			 shaper:=Shaper,
-			 faults:=Faults}) when is_map(OldLink) ->
-    IsConform = maps:get(Key, Contract),
-    case IsConform(Val) of
-    	true  -> #{link=>Shaper(OldLink), status=>ok};
-    	false -> #{status => maps:get(Key, Faults)}
-    end.
+if_valid_shape_newlink(#{contract:=false, faults:=Faults}) ->
+    #{status => Faults};
+if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper}) ->
+    #{link=>Shaper(OldLink), status=>ok}.
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
