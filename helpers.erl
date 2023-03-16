@@ -17,7 +17,6 @@
 	 open_db_or_create_from_template/2,
 	 pipe/2,
 	 save_db_if_ids_differ/3,
-	 act_if_match_found/2,
 	 if_conform_tag_link_and_add_to_db/1,
 	 if_valid_shape_newlink/1,
 	 time_in_iso8601/0,
