@@ -14,13 +14,10 @@
 	 create_link/3,
 	 find_matching_link/2,
 	 find_not_matching_links/2,
-	 if_needed_update_and_log/1,
 	 open_db_or_create_from_template/2,
 	 pipe/2,
 	 save_db_if_ids_differ/3,
 	 act_if_match_found/2,
-	 if_act_done_update_db/3,
-	 if_act_done_delete_from_db/3,
 	 if_conform_tag_link_and_add_to_db/1,
 	 if_valid_shape_newlink/1,
 	 time_in_iso8601/0,
@@ -79,6 +76,9 @@ if_valid_shape_newlink(#{matches:=[]}) ->
 if_valid_shape_newlink(#{matches:=Links}) 
   when is_list(Links), length(Links)>1 ->
     #{status => 'more than one match'};
+if_valid_shape_newlink(#{matches:=[Link]}=Args) 
+  when is_map(Link), not is_map_key(shaper, Args) ->
+    #{status => ok, link=>Link};
 if_valid_shape_newlink(#{key:=Key, contract:=Contract}) 
   when not is_map_key(Key, Contract) ->
     #{status => 'not allowed'};
@@ -92,46 +92,9 @@ if_valid_shape_newlink(#{key:=Key, val:=Val,
 			 faults:=Faults}) when is_map(OldLink) ->
     IsConform = maps:get(Key, Contract),
     case IsConform(Val) of
-	true  -> #{link=>Shaper(Key, Val, OldLink), status=>ok};
-	false -> #{status => maps:get(Key, Faults)}
+    	true  -> #{link=>Shaper(OldLink), status=>ok};
+    	false -> #{status => maps:get(Key, Faults)}
     end.
-
-%% if_needed_update_and_log(#{key:=Key, contract:=Contract, link:=OldLink}) 
-%%   when not is_map_key(Key, Contract) ->
-%%     #{
-%%       link   => OldLink,
-%%       status => 'not allowed'
-%%      };
-
-%% if_needed_update_and_log(#{link:=OldLink, key:=Key, val:=Val}) 
-%%   when map_get(Key,OldLink)==Val ->
-%%     #{
-%%       link   => OldLink,
-%%       status => 'same value'
-%%      };
-
-if_needed_update_and_log(#{contract:=Contract, val:=Val, key:=Key}=Args) ->
-    IsConform = maps:get(Key, Contract),
-    if_conform_update_and_log(Args#{conform=>IsConform(Val)}).
-
-if_conform_update_and_log(#{conform:=true, link:=OldLink, 
-			    key:=Key, val:=Val}) ->
-    NewLink = maps:update(Key, Val, OldLink),   
-    OldLog  = maps:get(log, NewLink, []),
-    NewLog  = [#{Key => maps:get(Key, OldLink), 
-		 until=> time_in_iso8601()} | OldLog],
-
-    #{
-      link   => tag_link_with_hash_of_addrs(NewLink#{log => NewLog}),
-      status => ok
-     };
-
-if_conform_update_and_log(#{conform:=false, link:=OldLink, 
-			    key:=Key, faults:=Faults}) ->
-    #{
-      link   => OldLink,
-      status => maps:get(Key, Faults)
-     }.
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
@@ -172,19 +135,6 @@ act_if_match_found(Act, [Link]) when is_map(Link) ->
 
 %% act_if_match_found(_, []) ->
 %%     #{status=>'not found'}.
-
-if_act_done_update_db(OldDB, Links, #{status:=ok, link:=NewLink}) ->
-    NewList = lists:append(Links, [NewLink]),
-    OldDB#{links := NewList};
-
-if_act_done_update_db(OldDB, Links, #{status:=_}) ->
-    OldDB.
-
-if_act_done_delete_from_db(OldDB, Links, #{status:=ok}) ->
-    OldDB#{links := Links};
-
-if_act_done_delete_from_db(OldDB, Links, #{status:=_}) ->
-    OldDB.
 
 if_newlink_update_list(#{link:=NewLink, updater:=Updater, 
 			 'all but matches':=AllButMatches}) ->

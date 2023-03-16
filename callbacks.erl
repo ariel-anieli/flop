@@ -17,13 +17,10 @@
     get_key/1,
     find_matching_link/2,
     find_not_matching_links/2,
-    if_needed_update_and_log/1,
     open_db_or_create_from_template/2,
     pipe/2,
     save_db_if_ids_differ/3,
     act_if_match_found/2,
-    if_act_done_update_db/3,
-    if_act_done_delete_from_db/3,
     if_conform_tag_link_and_add_to_db/1,
     if_valid_shape_newlink/1,
     time_in_iso8601/0,
@@ -77,22 +74,16 @@ handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) ->
 handle_call(#{request:=read}, From, DB) -> 
     {reply, #{db=>DB, status=>ok}, DB};
 
-handle_call(#{request:=update, id:=UserID}=Args, From, OldDB) ->
-    %% AugmtArgs = Args#{contract=>get_contracts(), faults=>get_faults()},
-    %% UpdOrLog  = fun(Link) -> 
-    %% 			if_needed_update_and_log(AugmtArgs#{link=>Link}) end,
-    %% UpdResult = act_if_match_found(UpdOrLog, find_matching_link(OldDB, UserID)),
-
-    %% #{status:=Status} = UpdResult,
-    %% AllButUpdated     = find_not_matching_links(OldDB, UserID),
-    %% NewDB = if_act_done_update_db(OldDB, AllButUpdated, UpdResult),
-
-    Shaper   = fun(Key, Val, OldLink) -> 
-		       NewLink = maps:update(Key, Val, OldLink),   
-		       OldLog  = maps:get(log, NewLink, []),
-		       NewLog  = [#{Key => maps:get(Key, OldLink), 
-				    until=> time_in_iso8601()} | OldLog],
-		       tag_link_with_hash_of_addrs(NewLink#{log => NewLog})
+handle_call(#{request:=update, id:=UserID, 
+	      key:=Key, val:=Val}=Args, From, OldDB) ->
+    Shaper   = fun(Key, Val) -> 
+		       fun(OldLink) -> 
+			       NewLink = maps:update(Key, Val, OldLink),   
+			       OldLog  = maps:get(log, NewLink, []),
+			       NewLog  = [#{Key => maps:get(Key, OldLink), 
+					    until=> time_in_iso8601()} | OldLog],
+			       tag_link_with_hash_of_addrs(NewLink#{log => NewLog})
+		       end
 	       end,
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
     NewArgs  = Args#{
@@ -100,7 +91,7 @@ handle_call(#{request:=update, id:=UserID}=Args, From, OldDB) ->
 		     matches  => find_matching_link(OldDB, UserID),
 		     contract => get_contracts(),
 		     faults   => get_faults(),
-		     shaper   => Shaper
+		     shaper   => Shaper(Key, Val)
 		    },
 
     IsValid = if_valid_shape_newlink(NewArgs),
@@ -117,12 +108,20 @@ handle_call(#{request:=update, id:=UserID}=Args, From, OldDB) ->
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
-handle_call(#{request:=delete, id:=UserID}, From, OldDB) -> 
-    TagForDel = fun(Link) -> #{link=>Link, status=>ok} end,
-    DelResult = act_if_match_found(TagForDel, find_matching_link(OldDB, UserID)),
-    #{status:=Status} = DelResult,
-    AllButDeletedLink = find_not_matching_links(OldDB, UserID),
-    NewDB = if_act_done_delete_from_db(OldDB, AllButDeletedLink, DelResult),
+handle_call(#{request:=delete, id:=UserID} = Args, From, OldDB) -> 
+    Updater  = fun(Links, NewLink) -> Links end,
+    NewArgs  = Args#{matches => find_matching_link(OldDB, UserID)},
+    IsValid  = if_valid_shape_newlink(NewArgs),
+    #{status:=Status} = IsValid,
+    AllButMatches     = find_not_matching_links(OldDB, UserID),
+    OldList = maps:get(links, OldDB),
+    NewList = if_newlink_update_list(
+		IsValid#{
+			 oldlist           => OldList,
+			 updater           => Updater, 
+			 'all but matches' => AllButMatches
+			}),
+    NewDB   = OldDB#{links:=NewList},
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
