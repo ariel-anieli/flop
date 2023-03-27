@@ -20,7 +20,9 @@
 	 if_conform_tag_link_and_add_to_db/1,
 	 if_valid_shape_newlink/1,
 	 time_in_iso8601/0,
-	 if_newlink_update_list/1
+	 if_newlink_update_list/1,
+	 update_key_with_val_in_link/2,
+	 if_request_is_valid_update_db/1
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -87,6 +89,31 @@ if_valid_shape_newlink(#{contract:=false, faults:=Faults}) ->
     #{status => Faults};
 if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper}) ->
     #{link=>Shaper(OldLink), status=>ok}.
+
+update_key_with_val_in_link(Key, Val) ->
+    fun(OldLink) -> 
+	    NewLink = maps:update(Key, Val, OldLink),   
+	    OldLog  = maps:get(log, NewLink, []),
+	    NewLog  = [#{Key => maps:get(Key, OldLink), 
+			 until=> time_in_iso8601()} | OldLog],
+	    tag_link_with_hash_of_addrs(NewLink#{log => NewLog})
+    end.
+
+if_request_is_valid_update_db(#{db:=OldDB, id:=UserID, updater:=Updater}=Args) ->
+    NewArgs    = Args#{matches => find_matching_link(OldDB, UserID)},
+    IsValid    = if_valid_shape_newlink(NewArgs),
+    ButMatches = find_not_matching_links(OldDB, UserID),
+    UpdParams  = #{
+		   oldlist           => maps:get(links, OldDB),
+		   updater           => Updater, 
+		   'all but matches' => AllButMatches
+		  },
+    NewList  = if_newlink_update_list(maps:merge(IsValid, UpdParams)),
+
+    #{
+      db     => OldDB#{links:=NewList},
+      status => maps:get(status, IsValid)
+     }.
 
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
