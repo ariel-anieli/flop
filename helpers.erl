@@ -99,14 +99,20 @@ update_key_with_val_in_link(Key, Val) ->
 	    tag_link_with_hash_of_addrs(NewLink#{log => NewLog})
     end.
 
-if_request_is_valid_update_db(#{db:=OldDB, id:=UserID, updater:=Updater}=Args) ->
-    NewArgs    = Args#{matches => find_matching_link(OldDB, UserID)},
-    IsValid    = if_valid_shape_newlink(NewArgs),
+get_userid(#{id:=ID}) ->
+    ID;
+get_userid(#{is_valid:=IsValid}) ->
+    Link = maps:get(link, IsValid),
+    maps:get(id, Link).
+
+if_request_is_valid_update_db(#{db:=OldDB, updater:=Updater}=Args) ->
+    IsValid    = if_valid_shape_newlink(Args),
+    UserID     = get_userid(Args#{is_valid => IsValid}),
     ButMatches = find_not_matching_links(OldDB, UserID),
     UpdParams  = #{
 		   oldlist           => maps:get(links, OldDB),
 		   updater           => Updater, 
-		   'all but matches' => AllButMatches
+		   'all but matches' => ButMatches
 		  },
     NewList  = if_newlink_update_list(maps:merge(IsValid, UpdParams)),
 
@@ -147,7 +153,7 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
     #{status=>'no diff', db=>OldDB}.
 
 if_newlink_update_list(#{link:=NewLink, updater:=Updater, 
-			 'all but matches':=AllButMatches}) ->
-    Updater(AllButMatches, NewLink);
+			 'all but matches':=ButMatches}) ->
+    Updater(ButMatches, NewLink);
 if_newlink_update_list(#{status:=Status, oldlist:=OldList}) when Status/=ok ->
     OldList.

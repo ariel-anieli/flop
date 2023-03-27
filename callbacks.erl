@@ -61,15 +61,19 @@ handle_call(#{request:=template_db}, _From, DB) ->
 handle_call(#{request:=template_link}, _From, DB) -> 
     {reply, get_link_template(), DB};
 
-handle_call(#{request:=create, link:=UntaggedLink}, _From, OldDB) -> 
-    IsLink       = maps:get(link, get_contracts()),
-    CreateResult = if_conform_tag_link_and_add_to_db(#{
-		     faults  => get_faults(),
-		     conform => IsLink(UntaggedLink),
-		     link    => UntaggedLink,
-		     db      => OldDB
-		    }),
-    #{db:=NewDB, status:=Status} = CreateResult,    
+handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) -> 
+    Shaper   = fun(Link) -> tag_link_with_hash_of_addrs(Link) end,
+    Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
+    Contract = maps:get(link, get_contracts()),
+    NewArgs  = Args#{
+		     db       => OldDB,
+		     updater  => Updater,
+		     contract => Contract(UntaggedLink),
+		     matches  => [UntaggedLink],
+		     faults   => maps:get(link, get_faults()),
+		     shaper   => Shaper
+		   },
+    #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
 
     {reply, #{db=>NewDB, status=>Status}, NewDB};
 
@@ -81,11 +85,12 @@ handle_call(#{request:=update, id:=UserID,
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
     Contract = maps:get(Key, get_contracts(), fun(Val) -> false end),
     NewArgs  = Args#{
-		    db       => OldDB,
-		    updater  => Updater,
-		    contract => Contract(Val),
-		    faults   => maps:get(Key, get_faults(), nofault),
-		    shaper   => update_key_with_val_in_link(Key, Val)
+		     db       => OldDB,
+		     updater  => Updater,
+		     contract => Contract(Val),
+		     faults   => maps:get(Key, get_faults(), nofault),
+		     shaper   => update_key_with_val_in_link(Key, Val),
+		     matches  => find_matching_link(OldDB, UserID)
 		   },
     #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
 
@@ -93,7 +98,11 @@ handle_call(#{request:=update, id:=UserID,
 
 handle_call(#{request:=delete, id:=UserID} = Args, From, OldDB) -> 
     Updater = fun(Links, NewLink) -> Links end,
-    NewArgs = Args#{db=>OldDB, updater=>Updater},
+    NewArgs = Args#{
+		    db      => OldDB, 
+		    updater => Updater,
+		    matches => find_matching_link(OldDB, UserID)
+		   },
 
     #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
     {reply, #{db=>NewDB, status=>Status}, NewDB};
