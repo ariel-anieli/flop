@@ -20,7 +20,9 @@
 	 if_conform_tag_link_and_add_to_db/1,
 	 if_valid_shape_newlink/1,
 	 time_in_iso8601/0,
-	 if_newlink_update_list/1
+	 if_newlink_update_list/1,
+	 update_key_with_val_in_link/2,
+	 if_request_is_valid_update_db/1
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -88,6 +90,37 @@ if_valid_shape_newlink(#{contract:=false, faults:=Faults}) ->
 if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper}) ->
     #{link=>Shaper(OldLink), status=>ok}.
 
+update_key_with_val_in_link(Key, Val) ->
+    fun(OldLink) -> 
+	    NewLink = maps:update(Key, Val, OldLink),   
+	    OldLog  = maps:get(log, NewLink, []),
+	    NewLog  = [#{Key => maps:get(Key, OldLink), 
+			 until=> time_in_iso8601()} | OldLog],
+	    tag_link_with_hash_of_addrs(NewLink#{log => NewLog})
+    end.
+
+get_userid(#{id:=ID}) ->
+    ID;
+get_userid(#{is_valid:=IsValid}) ->
+    Link = maps:get(link, IsValid),
+    maps:get(id, Link).
+
+if_request_is_valid_update_db(#{db:=OldDB, updater:=Updater}=Args) ->
+    IsValid    = if_valid_shape_newlink(Args),
+    UserID     = get_userid(Args#{is_valid => IsValid}),
+    ButMatches = find_not_matching_links(OldDB, UserID),
+    UpdParams  = #{
+		   oldlist           => maps:get(links, OldDB),
+		   updater           => Updater, 
+		   'all but matches' => ButMatches
+		  },
+    NewList  = if_newlink_update_list(maps:merge(IsValid, UpdParams)),
+
+    #{
+      db     => OldDB#{links:=NewList},
+      status => maps:get(status, IsValid)
+     }.
+
 create_link(OldDB, Link, []) ->
     OldLinkList = maps:get(links, OldDB),
     NewDB = OldDB#{links := lists:append(OldLinkList, [Link])},
@@ -120,7 +153,7 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
     #{status=>'no diff', db=>OldDB}.
 
 if_newlink_update_list(#{link:=NewLink, updater:=Updater, 
-			 'all but matches':=AllButMatches}) ->
-    Updater(AllButMatches, NewLink);
+			 'all but matches':=ButMatches}) ->
+    Updater(ButMatches, NewLink);
 if_newlink_update_list(#{status:=Status, oldlist:=OldList}) when Status/=ok ->
     OldList.
