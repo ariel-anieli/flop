@@ -87,7 +87,8 @@ if_valid_shape_newlink(#{shaper:=Shaper, link:=UnTaggedLink,
     if_valid_shape_newlink(maps:merge(Args, NewParams));
 if_valid_shape_newlink(#{matches:=[], request:=create, link:=TaggedLink}) ->
     #{link=>TaggedLink, status=>ok};
-if_valid_shape_newlink(#{matches:=[Links], request:=create}) ->
+if_valid_shape_newlink(#{matches:=Links, request:=create}) 
+  when is_list(Links), length(Links)>0 ->
     #{status=>'already in db'};
 if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper, request:=update}) ->
     #{link=>Shaper(OldLink), status=>ok}.
