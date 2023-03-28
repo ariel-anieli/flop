@@ -11,13 +11,11 @@
 ]).
 
 -export([
-	 create_link/3,
 	 find_matching_link/2,
 	 find_not_matching_links/2,
 	 open_db_or_create_from_template/2,
 	 pipe/2,
 	 save_db_if_ids_differ/3,
-	 if_conform_tag_link_and_add_to_db/1,
 	 if_valid_shape_newlink/1,
 	 time_in_iso8601/0,
 	 if_newlink_update_list/1,
@@ -61,16 +59,6 @@ find_not_matching_links(DB, UserID) ->
 
 time_in_iso8601() ->
     calendar:system_time_to_rfc3339(erlang:system_time(second)).
-
-if_conform_tag_link_and_add_to_db(#{link:=Link, db:=OldDB, conform:=true}) ->
-    TaggedLink   = tag_link_with_hash_of_addrs(Link),
-    TaggedLinkID = maps:get(id, TaggedLink),
-    MatchingLnks = find_matching_link(OldDB, TaggedLinkID),
-
-    create_link(OldDB, TaggedLink, MatchingLnks);
-
-if_conform_tag_link_and_add_to_db(#{db:=OldDB, conform:=false, faults:=Faults}) ->
-    #{db=>OldDB, status=>maps:get(link, Faults)}.
     
 if_valid_shape_newlink(#{matches:=[], request:=Request}) 
   when Request==update;Request==delete ->
@@ -134,14 +122,6 @@ if_request_is_valid_update_db(#{db:=OldDB, updater:=Updater}=Args) ->
       db     => OldDB#{links:=NewList},
       status => maps:get(status, IsValid)
      }.
-
-create_link(OldDB, Link, []) ->
-    OldLinkList = maps:get(links, OldDB),
-    NewDB = OldDB#{links := lists:append(OldLinkList, [Link])},
-    #{db=>NewDB, status=>ok};
-
-create_link(OldDB, _, [_]) -> 
-    #{db=>OldDB, status=>'already in db'}.
 
 update_time_and_id(OldDB, NewID) ->
     Time  = #{'@' => time_in_iso8601()},

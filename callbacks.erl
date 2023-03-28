@@ -12,19 +12,11 @@
 -import(
    helpers,
    [
-    create_link/3,
-    get_template/1,
-    get_key/1,
     find_matching_link/2,
-    find_not_matching_links/2,
     open_db_or_create_from_template/2,
     pipe/2,
     save_db_if_ids_differ/3,
-    act_if_match_found/2,
-    if_conform_tag_link_and_add_to_db/1,
     if_valid_shape_newlink/1,
-    time_in_iso8601/0,
-    if_newlink_update_list/1,
     update_key_with_val_in_link/2,
     if_request_is_valid_update_db/1
    ]
