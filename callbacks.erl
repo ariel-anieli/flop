@@ -69,7 +69,6 @@ handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) ->
 		     db       => OldDB,
 		     updater  => Updater,
 		     contract => Contract(UntaggedLink),
-		     matches  => [UntaggedLink],
 		     faults   => maps:get(link, get_faults()),
 		     shaper   => Shaper
 		   },
