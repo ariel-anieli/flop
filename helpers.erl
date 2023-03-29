@@ -61,8 +61,6 @@ if_valid_shape_newlink(#{matches:=[], request:=Request})
 if_valid_shape_newlink(#{matches:=Links}) 
   when is_list(Links), length(Links)>1 ->
     #{status => 'more than one match'};
-if_valid_shape_newlink(#{matches:=[Link], request:=delete}) ->
-    #{status => ok, link=>Link};
 if_valid_shape_newlink(#{faults:=nofault}) ->
     #{status => 'not allowed'};
 if_valid_shape_newlink(#{matches:=[OldLink], key:=Key, val:=Val}) 
@@ -70,23 +68,25 @@ if_valid_shape_newlink(#{matches:=[OldLink], key:=Key, val:=Val})
     #{status => 'same value'};
 if_valid_shape_newlink(#{contract:=false, faults:=Faults}) ->
     #{status => Faults};
-if_valid_shape_newlink(#{shaper:=Shaper, link:=UnTaggedLink, 
-			 request:=create}=Args) 
+if_valid_shape_newlink(#{shaper:=Shaper, request:=create}=Args)
   when not is_map_key(matches, Args) ->
     OldDB        = maps:get(db, Args),
+    UnTaggedLink = maps:get(link, Args),
     TaggedLink   = Shaper(UnTaggedLink), 
     TaggedLinkID = maps:get(id, TaggedLink),
     Matches      = find_matching_link(OldDB, TaggedLinkID),
     NewParams    = #{matches=>Matches, link=>TaggedLink},
 
     if_valid_shape_newlink(maps:merge(Args, NewParams));
-if_valid_shape_newlink(#{matches:=[], request:=create, link:=TaggedLink}) ->
-    #{link=>TaggedLink, status=>ok};
 if_valid_shape_newlink(#{matches:=Links, request:=create}) 
   when is_list(Links), length(Links)>0 ->
     #{status=>'already in db'};
+if_valid_shape_newlink(#{matches:=[], request:=create, link:=TaggedLink}) ->
+    #{status => ok, link => TaggedLink};
+if_valid_shape_newlink(#{matches:=[Link], request:=delete}) ->
+    #{status => ok, link => Link};
 if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper, request:=update}) ->
-    #{link=>Shaper(OldLink), status=>ok}.
+    #{status => ok, link => Shaper(OldLink)}.
 
 update_key_with_val_in_link(Key, Val) ->
     fun(OldLink) -> 
