@@ -4,9 +4,6 @@
    templates,
    [
     get_db_template/1,
-    get_link_template/0,
-    get_template/1,
-    get_key/1,
     tag_link_with_hash_of_addrs/1
 ]).
 
@@ -16,8 +13,6 @@
 	 open_db_or_create_from_template/2,
 	 pipe/2,
 	 save_db_if_ids_differ/3,
-	 if_valid_shape_newlink/1,
-	 time_in_iso8601/0,
 	 if_newlink_update_list/1,
 	 update_key_with_val_in_link/2,
 	 if_request_is_valid_update_db/1

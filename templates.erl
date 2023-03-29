@@ -4,8 +4,6 @@
 	 build_snippet_using_keys/1,
 	 get_db_template/1,
 	 get_link_template/0,
-	 get_template/1,
-	 get_key/1,
 	 hash/1,
 	 tag_link_with_hash_of_addrs/1
 ]).

@@ -16,7 +16,6 @@
     open_db_or_create_from_template/2,
     pipe/2,
     save_db_if_ids_differ/3,
-    if_valid_shape_newlink/1,
     update_key_with_val_in_link/2,
     if_request_is_valid_update_db/1
    ]
