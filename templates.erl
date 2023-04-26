@@ -67,12 +67,9 @@ get_key(#{key:=ip, link:=Link}) ->
      };
 
 get_key(#{key:=net, link:=Link}) -> 
-    Pattern = "\.[0-9]+/[0-9]+",
-    String  = maps:get(net, Link),
-
     #{
       key => "!net!",
-      val => re:replace(String, Pattern, "", [{return, list}])
+      val => maps:get(net, Link)
      };
 
 get_key(#{key:='to port', link:=Link}) -> 
