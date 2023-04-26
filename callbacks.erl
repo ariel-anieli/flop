@@ -1,6 +1,8 @@
 -module(callbacks).
 -behaviour(gen_server).
 
+-define(LOG, logger).
+
 -import(
    contracts,
    [
@@ -42,6 +44,7 @@
 ]).
 
 init(DB) -> 
+    gen_event:start_link({local, ?LOG}),
     {ok, open_db_or_create_from_template(file:consult(DB), DB)}.
 
 handle_call(#{request:=template_db}, _From, DB) -> 
@@ -147,6 +150,7 @@ handle_call(#{request:=save}, _From, OldDB) ->
     {reply, Rslt, maps:get(db, Rslt)};
 
 handle_call(#{request:=stop}, _From, DB) ->
+    %gen_event:stop(?LOG),
     {stop, normal, stopped, DB}.
 
 handle_cast(#{request:=print, cmds:=Cmds}, DB) -> 
@@ -156,8 +160,8 @@ handle_cast(#{request:=print, cmds:=Cmds}, DB) ->
 
     {noreply, DB}.
 
-handle_info(_Info, DB)	         -> {noreply, DB}.
-terminate(_Reason, _DB)	         -> ok.
-code_change(_OldVsn, DB, _Extra) -> {ok, DB}.
+terminate(Reason, DB)          -> ok.
+handle_info(Info, DB)	       -> {noreply, DB}.
+code_change(OldVsn, DB, Extra) -> {ok, DB}.
 
 

@@ -61,13 +61,9 @@ get_key(#{key:=name, db:=DB}) ->
      };
 
 get_key(#{key:=ip, link:=Link}) -> 
-    Network  = maps:get(net, Link),
-    Pattern  = "[0-9]+/",
-    Replace  = "1/",
-
     #{
       key => "!ip!",
-      val => re:replace(Network, Pattern, Replace, [{return, list}])
+      val => maps:get(net, Link)
      };
 
 get_key(#{key:=net, link:=Link}) -> 
