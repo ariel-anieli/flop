@@ -158,15 +158,10 @@ get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
       val => lists:join(",", VLANs)
      };
 
-get_key(#{key:='vlans from dev', db:=DB, link:=Link}) ->
-    From  = maps:get(from, Link),
-    Links = maps:get(links, DB),
-    VLANs = [integer_to_list(maps:get(vlan, Link))
-	     || Link <- Links, From=:=maps:get(from,Link)],
-
+get_key(#{key:='vlans from dev', link:=Link}) ->
     #{
       key => "!vlans-from-dev!",
-      val => lists:join(",", VLANs)
+      val => integer_to_list(maps:get(vlan, Link))
      };
 
 get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
