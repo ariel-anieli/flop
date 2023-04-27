@@ -106,6 +106,16 @@ handle_call(#{request:=description, type:=nxos} = Args, _From, DB) ->
 
     {reply, #{'description'=>Descs}, DB};
 
+handle_call(#{request:='interface port-channel', type:=nxos} = Args, _From, DB) -> 
+    Keys  = [desc, aggr, 'vlans from aggr'],
+    Intfs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
+
+    Ports = [Intf || Intf <- Intfs, 
+		     nomatch=:=re:run(Intf, "port-channel 0", [{capture, none}])
+	    ],
+
+    {reply, #{'interface port-channel'=>Ports}, DB};
+
 handle_call(#{request:='interface ethernet', type:=nxos} = Args, _From, DB) -> 
     Keys  = [desc, 'from port', 'vlans from dev'],
     Intfs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),

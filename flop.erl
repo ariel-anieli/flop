@@ -18,6 +18,7 @@
 -export([
 	 description/1,
 	 intf_eth/1,
+	 intf_prt_chnl/1,
 	 intf_vlan/1,
 	 print/1,
 	 route_map/1,
@@ -41,6 +42,8 @@ delete(ID)           -> gen_server:call(?SRV, #{request=>delete, id=>ID}).
 
 % CLI translators
 description(Type)  -> gen_server:call(?SRV, #{request=>description,
+					      type=>Type}).
+intf_prt_chnl(Type) -> gen_server:call(?SRV, #{request=>'interface port-channel',
 					      type=>Type}).
 intf_eth(Type)     -> gen_server:call(?SRV, #{request=>'interface ethernet',
 					      type=>Type}).

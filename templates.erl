@@ -14,6 +14,12 @@ pipe(Arg, Funcs) ->
 get_template(#{type:=nxos, request:=description}) ->
     "cx=!name!;to=!to-dev!_!to-port!";
 
+get_template(#{type:=nxos, request:='interface port-channel'}) ->
+    "interface port-channel !aggr!
+     description !desc!
+     switchport mode trunk
+     switchport trunk allowed vlan !vlans-from-aggr!";
+
 get_template(#{type:=nxos, request:='interface ethernet'}) ->
     "interface ethernet 1/!from-port!
      description !desc!
@@ -36,6 +42,12 @@ get_template(#{type:=nxos, request:='split by tag'}) ->
 get_template(#{type:=nxos, request:=vlan}) ->
     "vlan !vlan!
     name !name!-!net!".
+
+get_key(#{key:=aggr, link:=Link}) -> 
+    #{
+      key => "!aggr!",
+      val => integer_to_list(maps:get(aggr, Link, 0))
+     };
 
 get_key(#{key:=desc, link:=Link} = Args) -> 
     Keys = ['to dev', 'to port', name],
@@ -98,6 +110,17 @@ get_key(#{key:=vlan, link:=Link}) ->
     #{
       key => "!vlan!",
       val => integer_to_list(maps:get(vlan,Link))
+     };
+
+get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
+    Aggr  = maps:get(aggr, Link, 0),
+    Links = maps:get(links, DB),
+    VLANs = lists:uniq([integer_to_list(maps:get(vlan, Link))
+	     || Link <- Links, Aggr=:=maps:get(aggr,Link,0)]),
+
+    #{
+      key => "!vlans-from-aggr!",
+      val => lists:join(",", VLANs)
      };
 
 get_key(#{key:='vlans from dev', db:=DB, link:=Link}) ->
