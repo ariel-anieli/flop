@@ -79,6 +79,18 @@ get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan}=Link)
 
     is_valid([IsConform(Key) || Key <- maps:keys(Link)]);
 
+get_link_contract(#{from:=From, to:=To, net:=Net, 
+		    tag:=Tag, aggr:=Aggr, vlan:=Vlan}=Link)
+  when map_size(Link)==6  ->
+    Contracts = get_contracts(),
+    IsConform = fun(Key) ->
+			Check     = maps:get(Key, Contracts),
+			Value     = maps:get(Key, Link),
+			Check(Value)
+		end,
+
+    is_valid([IsConform(Key) || Key <- maps:keys(Link)]);
+
 get_link_contract(_) ->
     false.
 
@@ -92,7 +104,8 @@ get_contracts() ->
       vlan => fun(Vlan) -> get_vlan_contract(Vlan) end,
       port => fun(Port) -> get_port_contract(Port) end,
       dev  => fun(Dev)  -> get_dev_contract(Dev) end,
-      addr => fun(Addr) -> get_addr_contract(Addr) end
+      addr => fun(Addr) -> get_addr_contract(Addr) end,
+      aggr => fun(Aggr) -> get_port_contract(Aggr) end
      }.
 
 get_faults() -> 
@@ -105,5 +118,6 @@ get_faults() ->
       vlan  => 'Must be an integer: <4095 and >=0',
       port  => 'Must be an integer: and >=0',
       dev   => 'Must be a string',
-      addr  => 'Must be a MAC address'
+      addr  => 'Must be a MAC address',
+      aggr  => 'Must be an integer: and >=0'
      }.
