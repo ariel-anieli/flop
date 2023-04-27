@@ -46,7 +46,7 @@ get_template(#{type:=nxos, request:=vlan}) ->
 get_key(#{key:=aggr, link:=Link}) -> 
     #{
       key => "!aggr!",
-      val => integer_to_list(maps:get(aggr, Link, 0))
+      val => integer_to_list(maps:get(aggr, Link))
      };
 
 get_key(#{key:=desc, link:=Link} = Args) -> 
