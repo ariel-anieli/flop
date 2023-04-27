@@ -107,7 +107,7 @@ handle_call(#{request:=description, type:=nxos} = Args, _From, DB) ->
     {reply, #{'description'=>Descs}, DB};
 
 handle_call(#{request:='interface port-channel', type:=nxos}=Args, From, DB) ->
-    Keys  = [desc, aggr, 'vlans from aggr'],
+    Keys  = ['desc aggr', aggr, 'vlans from aggr'],
     Links = maps:get(links, DB),
     
     AggrLinks     = [Link || Link <- Links, maps:is_key(aggr, Link)],

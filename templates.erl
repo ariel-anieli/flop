@@ -14,9 +14,12 @@ pipe(Arg, Funcs) ->
 get_template(#{type:=nxos, request:=description}) ->
     "cx=!name!;to=!to-dev!_!to-port!";
 
+get_template(#{type:=nxos, request:='desc aggr'}) ->
+    "cx=!name!;to=!to-dev!_!to-aggr-port!";
+
 get_template(#{type:=nxos, request:='interface port-channel'}) ->
     "interface port-channel !aggr!
-     description !desc!
+     description !desc-aggr!
      switchport mode trunk
      switchport trunk allowed vlan !vlans-from-aggr!";
 
@@ -67,6 +70,15 @@ get_key(#{key:=desc, link:=Link} = Args) ->
       val => build_from_link(Args#{keys=>Keys, request=>Req, link=>Link})
      };
 
+get_key(#{key:='desc aggr', link:=Link} = Args) -> 
+    Keys = ['to dev', 'to aggr port', name],
+    Req  = 'desc aggr',
+
+    #{
+      key => "!desc-aggr!",
+      val => build_from_link(Args#{keys=>Keys, request=>Req, link=>Link})
+     };
+
 get_key(#{key:='from port', link:=Link}) -> 
     From = maps:get(from, Link),
 
@@ -99,6 +111,20 @@ get_key(#{key:='to port', link:=Link}) ->
     #{
       key => "!to-port!",
       val => integer_to_list(maps:get(port, To))
+     };
+
+get_key(#{key:='to aggr port', link:=Link, db:=DB}) -> 
+    GetPort = fun(Link) -> To = maps:get(to,Link),
+			   maps:get(port, To) end,
+
+    Aggr  = maps:get(aggr, Link, 0),
+    Links = maps:get(links, DB),
+    Ports = [integer_to_list(GetPort(Link))
+	     || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
+
+    #{
+      key => "!to-aggr-port!",
+      val => lists:join("-", lists:sort(Ports))
      };
 
 get_key(#{key:=tag, link:=Link}) -> 
