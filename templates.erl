@@ -20,11 +20,20 @@ get_template(#{type:=nxos, request:='interface port-channel'}) ->
      switchport mode trunk
      switchport trunk allowed vlan !vlans-from-aggr!";
 
-get_template(#{type:=nxos, request:='interface ethernet'}) ->
+get_template(#{type:=nxos, request:='interface ethernet', link:=Link}) 
+  when not is_map_key(aggr, Link) ->
     "interface ethernet 1/!from-port!
      description !desc!
      switchport mode trunk
      switchport trunk allowed vlan !vlans-from-dev!";
+
+get_template(#{type:=nxos, request:='interface ethernet', link:=Link}) 
+  when is_map_key(aggr, Link) ->
+    "interface ethernet 1/!from-port!
+     description !desc!
+     switchport mode trunk
+     switchport trunk allowed vlan !vlans-from-dev!
+     channel-group !aggr! mode active";
 
 get_template(#{type:=nxos, request:='interface vlan'}) ->
     "interface vlan !vlan!
@@ -46,7 +55,7 @@ get_template(#{type:=nxos, request:=vlan}) ->
 get_key(#{key:=aggr, link:=Link}) -> 
     #{
       key => "!aggr!",
-      val => integer_to_list(maps:get(aggr, Link))
+      val => integer_to_list(maps:get(aggr, Link, 0))
      };
 
 get_key(#{key:=desc, link:=Link} = Args) -> 

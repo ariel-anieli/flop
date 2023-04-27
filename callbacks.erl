@@ -118,7 +118,7 @@ handle_call(#{request:='interface port-channel', type:=nxos}=Args, From, DB) ->
     {reply, #{'interface port-channel'=>Interfaces}, DB};
 
 handle_call(#{request:='interface ethernet', type:=nxos} = Args, _From, DB) -> 
-    Keys  = [desc, 'from port', 'vlans from dev'],
+    Keys  = [desc, aggr, 'from port', 'vlans from dev'],
     Intfs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 
     {reply, #{'interface ethernet'=>Intfs}, DB};
