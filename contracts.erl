@@ -2,6 +2,7 @@
 
 -export([
 	 get_contracts/0,
+	 get_defaults/0,
 	 get_faults/0
 	]).
 
@@ -106,6 +107,17 @@ get_contracts() ->
       dev  => fun(Dev)  -> get_dev_contract(Dev) end,
       addr => fun(Addr) -> get_addr_contract(Addr) end,
       aggr => fun(Aggr) -> get_port_contract(Aggr) end
+     }.
+
+get_defaults() ->
+    #{
+      net   => "0.0.0.0/0.0.0.0",
+      tag   => "",
+      vlan  => 0,
+      port  => 0,
+      dev   => "",
+      addr  => "ff:ff:ff:ff:ff:ff",
+      aggr  => 0
      }.
 
 get_faults() -> 
