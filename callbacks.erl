@@ -135,13 +135,13 @@ handle_call(#{request:='route map', type:=nxos} = Args, _From, DB) ->
 
     {reply, #{maps=>Maps}, DB};
 
-handle_call(#{request:='split by tag', type:=nxos} = Args, _From, DB) -> 
+handle_call(#{request:='split by tag', type:=nxos} = Args, From, DB) -> 
     Keys  = [name, tag],
     Zones = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 
     {reply, #{splits=>Zones}, DB};
 
-handle_call(#{request:=vlan, type:=nxos} = Args, _From, DB) -> 
+handle_call(#{request:=vlan, type:=nxos} = Args, From, DB) -> 
     Keys  = [vlan, name, net],
     VLANs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 

@@ -42,8 +42,11 @@ get_tag_contract(Tag) ->
 get_net_contract(Net) ->
     is_valid(is_list(Net) andalso is_net(Net)).
 
-get_vlan_contract(Vlan) ->
-    is_valid([is_integer(Vlan), Vlan<4095, Vlan>=0]).
+get_vlan_contract(VLAN) when is_integer(VLAN) ->
+    is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0]);
+get_vlan_contract(VLANs) when is_list(VLANs) ->
+    is_valid([is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0])
+	      || VLAN <- VLANs]).
 
 get_port_contract(Port) ->
     is_valid([is_integer(Port), Port>=0]).
@@ -127,7 +130,7 @@ get_faults() ->
       from  => 'Wrong value; for an example, run flop:template_link()',
       net   => 'Must be IPv4/Mask; for an example, run flop:template_link()',
       tag   => 'Must be a string',
-      vlan  => 'Must be an integer: <4095 and >=0',
+      vlan  => 'Must be an integer: <4095 and >=0; or a list of integers',
       port  => 'Must be an integer: and >=0',
       dev   => 'Must be a string',
       addr  => 'Must be a MAC address',

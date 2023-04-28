@@ -161,7 +161,7 @@ get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
 get_key(#{key:='vlans from dev', link:=Link}) ->
     #{
       key => "!vlans-from-dev!",
-      val => integer_to_list(maps:get(vlan, Link))
+      val => flatten_vlans(maps:get(vlan, Link))
      };
 
 get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
@@ -191,6 +191,11 @@ build_from_link(#{keys:=Keys} = Args) ->
 	keyset   => [get_key(Args#{key=>Key}) || Key <- Keys]
        }
      ).
+
+flatten_vlans(VLAN) when is_integer(VLAN) ->
+    integer_to_list(VLAN);
+flatten_vlans(VLANs) when is_list(VLANs) ->
+    lists:join(",", [integer_to_list(VLAN) || VLAN <- VLANs]).
 
 build_snippet_using_keys(#{db:=DB} = Args) -> 
     BuildFromLink    = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
