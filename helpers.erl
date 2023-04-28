@@ -1,6 +1,11 @@
 -module(helpers).
 
 -import(
+   contracts,
+   [get_defaults/0]
+).
+
+-import(
    templates,
    [
     get_db_template/1,
@@ -85,6 +90,13 @@ if_valid_shape_newlink(#{matches:=[], request:=create, link:=TaggedLink}) ->
     #{status => ok, link => TaggedLink};
 if_valid_shape_newlink(#{matches:=[Link], request:=delete}) ->
     #{status => ok, link => Link};
+if_valid_shape_newlink(#{matches:=[OldLink], request:=update, 
+			 contract:=true, key:=Key} = Args) 
+  when not is_map_key(Key, OldLink) ->
+    DefVal  = maps:get(Key, get_defaults()),
+    NewLink = OldLink#{Key => DefVal},
+
+    if_valid_shape_newlink(Args#{matches := [NewLink]});
 if_valid_shape_newlink(#{matches:=[OldLink], shaper:=Shaper, request:=update}) ->
     #{status => ok, link => Shaper(OldLink)}.
 
