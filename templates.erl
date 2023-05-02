@@ -144,14 +144,21 @@ get_key(#{key:='to dev', link:=Link}) ->
 get_key(#{key:=vlan, link:=Link}) -> 
     #{
       key => "!vlan!",
-      val => integer_to_list(maps:get(vlan,Link))
+      val => list_vlans(maps:get(vlan,Link))
      };
 
 get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
     Aggr  = maps:get(aggr, Link, 0),
     Links = maps:get(links, DB),
-    VLANs = lists:uniq([integer_to_list(maps:get(vlan, Link))
-	     || Link <- Links, Aggr=:=maps:get(aggr,Link,0)]),
+    VLANs = pipe(
+	      [list_vlans(maps:get(vlan, Link)) 
+	       || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
+	      [
+	       fun lists:merge/1,
+	       fun lists:sort/1,
+	       fun lists:uniq/1
+	      ]
+	     ),
 
     #{
       key => "!vlans-from-aggr!",
@@ -167,7 +174,7 @@ get_key(#{key:='vlans from dev', link:=Link}) ->
 get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
     Tag   = maps:get(tag, Link),
     Links = maps:get(links, DB),
-    VLANs = [lists:concat(["vlan", maps:get(vlan, Link)])
+    VLANs = [prefix_vlan(maps:get(vlan, Link))
 	     || Link <- Links, Tag=:=maps:get(tag,Link)],
 
     #{
@@ -186,29 +193,67 @@ get_key(#{key:=vrf, link:=Link} = Args) ->
 
 build_from_link(#{keys:=Keys} = Args) ->
     map_keyset_into_template(
-      #{
+      Args#{
 	template => get_template(Args),
 	keyset   => [get_key(Args#{key=>Key}) || Key <- Keys]
        }
      ).
+
+prefix_vlan(VLAN) when is_integer(VLAN) ->
+    lists:concat(["vlan", VLAN]);
+prefix_vlan(VLANs) when is_list(VLANs) ->
+    lists:join(" ", [lists:concat(["vlan", VLAN]) || VLAN <- VLANs]).
+
+list_vlans(VLAN) when is_integer(VLAN) ->
+    [integer_to_list(VLAN)];
+list_vlans(VLANs) when is_list(VLANs) ->
+    [integer_to_list(VLAN) || VLAN <- VLANs].
 
 flatten_vlans(VLAN) when is_integer(VLAN) ->
     integer_to_list(VLAN);
 flatten_vlans(VLANs) when is_list(VLANs) ->
     lists:join(",", [integer_to_list(VLAN) || VLAN <- VLANs]).
 
-build_snippet_using_keys(#{db:=DB} = Args) -> 
+build_snippet_using_keys(#{db:=DB, request:=Request} = Args)
+  when Request=/=vlan,Request=/='interface vlan'  ->
     BuildFromLink    = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
     BuildAllLinks    = fun(Links) -> lists:map(BuildFromLink, Links) end,
-    KeepUniqSnippets = fun(List)  -> lists:uniq(List) end,
 
-    pipe(maps:get(links, DB), [BuildAllLinks, KeepUniqSnippets]).
+    pipe(maps:get(links, DB),
+	 [
+	  BuildAllLinks,
+	  % fun lists:merge/1,
+	  fun lists:uniq/1
+	 ]
+	);
 
-map_keyset_into_template(#{keyset:=KeySet, template:=Temp}) ->
-    ReplaceKwithVal = fun(#{key:=Key, val:=Val}, Temp) -> 
-			      re:replace(Temp, Key, Val, [{return, list}]) end,
+build_snippet_using_keys(#{db:=DB, request:=Request} = Args)
+  when Request=:=vlan;Request=:='interface vlan' ->
+    BuildFromLink    = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
+    BuildAllLinks    = fun(Links) -> lists:map(BuildFromLink, Links) end,
 
-    lists:foldr(ReplaceKwithVal, Temp, KeySet).
+    pipe(maps:get(links, DB),
+	 [
+	  BuildAllLinks,
+	  fun lists:merge/1,
+	  fun lists:uniq/1
+	 ]
+	).
+
+map_keyset_into_template(#{keyset:=KS, template:=T,request:=Request})
+  when Request=:=vlan;Request=:='interface vlan' ->
+    VinK = fun(#{key:=K,val:=V},T) -> re:replace(T, K, V, [{return, list}]) end,
+    [#{key:=K,val:=Vs}] = lists:filter(fun(#{key:=K}) -> K=:="!vlan!" end, KS),
+    ButVs  = lists:filter(fun(#{key:=K}) -> K=/="!vlan!" end, KS),
+    Mapper = fun(V) -> lists:foldr(VinK, T, [#{key=>K, val=>V} | ButVs]) end,
+
+    lists:map(Mapper, Vs);
+
+map_keyset_into_template(#{keyset:=KS, template:=T, request:=Request}) 
+  when Request=/=vlan,Request=/='interface vlan' ->
+    VinK = fun(#{key:=K,val:=V},T) -> re:replace(T, K, V, [{return, list}]) end,
+
+    lists:foldr(VinK, T, KS).
 
 get_db_template(Name) ->
     #{
