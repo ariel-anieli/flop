@@ -1,5 +1,5 @@
 -module(templates).
--define(HASH_METHOD, ripemd160).
+-define(HASH_METHOD, md4).
 -export([
 	 build_snippet_using_keys/1,
 	 get_db_template/1,
@@ -314,11 +314,9 @@ get_random_endpoint_link() ->
 tag_link_with_hash_of_addrs(#{from:=From, to:=To} = Link) ->
     FromAddr = maps:get(addr, From),
     ToAddr   = maps:get(addr, To),
-    FromStr  = erlang:list_to_binary(
-		 re:replace(FromAddr, "\:", "", [global, {return, list}])),
-    ToStr    = erlang:list_to_binary(
-		 re:replace(ToAddr, "\:", "", [global, {return, list}])),
-    HashXOR  = hash(crypto:exor(FromStr, ToStr)),
+    FromStr  = erlang:list_to_binary(FromAddr),
+    ToStr    = erlang:list_to_binary(ToAddr),
+    HashXOR  = hash(crypto:exor(hash(FromStr), hash(ToStr))),
 
     Link#{id => HashXOR}.
 
@@ -327,7 +325,7 @@ hash(Term) ->
      Term,
       [
        fun(Str)  -> crypto:hash(?HASH_METHOD, Str) end,
-       fun(Hash) -> binary:encode_hex(Hash) end,
-       fun(Hex)  -> binary:bin_to_list(Hex) end,
-       fun(Str)  -> string:lowercase(Str) end
+       fun binary:encode_hex/1,
+       fun binary:bin_to_list/1,
+       fun string:lowercase/1
       ]).
