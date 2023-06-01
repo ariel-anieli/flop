@@ -79,77 +79,73 @@ get_key(#{key:='desc aggr', link:=Link} = Args) ->
       val => build_from_link(Args#{keys=>Keys, request=>Req, link=>Link})
      };
 
-get_key(#{key:='from port', link:=Link}) -> 
-    From = maps:get(from, Link),
+get_key(#{key:='from port', link:=#{from := From}}) ->
+    #{port:=Port} = From,
 
     #{
       key => "!from-port!",
-      val => integer_to_list(maps:get(port, From))
+      val => integer_to_list(Port)
      };
 
-get_key(#{key:=name, db:=DB}) -> 
+get_key(#{key:=name, db := #{name:=Name}}) -> 
     #{
       key => "!name!",
-      val => maps:get(name, DB)
+      val => Name
      };
 
-get_key(#{key:=ip, link:=Link}) -> 
+get_key(#{key:=ip, link := #{net:=IP}}) -> 
     #{
       key => "!ip!",
-      val => maps:get(net, Link)
+      val => IP
      };
 
-get_key(#{key:=net, link:=Link}) -> 
+get_key(#{key:=net, link := #{net:=Net}}) -> 
     #{
       key => "!net!",
-      val => maps:get(net, Link)
+      val => Net
      };
 
-get_key(#{key:='to port', link:=Link}) -> 
-    To = maps:get(to, Link),
+get_key(#{key:='to port', link := #{to:=To}}) -> 
+    #{port := Port} = To,
 
     #{
       key => "!to-port!",
-      val => integer_to_list(maps:get(port, To))
+      val => integer_to_list(Port)
      };
 
-get_key(#{key:='to aggr port', link:=Link, db:=DB}) -> 
-    GetPort = fun(Link) -> To = maps:get(to,Link),
-			   maps:get(port, To) end,
-
-    Aggr  = maps:get(aggr, Link, 0),
-    Links = maps:get(links, DB),
-    Ports = [integer_to_list(GetPort(Link))
-	     || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
+get_key(#{key:='to aggr port', link:=Link, db := #{links:=Links}}) -> 
+    GetPort = fun(#{to := #{port:=Port}}) -> Port end,
+    Aggr    = maps:get(aggr, Link, 0),
+    Ports   = [integer_to_list(GetPort(Link))
+	       || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
 
     #{
       key => "!to-aggr-port!",
       val => lists:join("-", lists:sort(Ports))
      };
 
-get_key(#{key:=tag, link:=Link}) -> 
+get_key(#{key:=tag, link := #{tag:=Tag}}) -> 
     #{
       key => "!tag!",
-      val => maps:get(tag, Link)
+      val => Tag
      };
 
-get_key(#{key:='to dev', link:=Link}) -> 
-    To = maps:get(to, Link),
+get_key(#{key:='to dev', link := #{to:=To}}) -> 
+    #{dev:=Dev} = To,
 
     #{
       key => "!to-dev!",
-      val => maps:get(dev, To)
+      val => Dev
      };
 
-get_key(#{key:=vlan, link:=Link}) -> 
+get_key(#{key:=vlan, link := #{vlan:=VLAN}}) -> 
     #{
       key => "!vlan!",
-      val => list_vlans(maps:get(vlan,Link))
+      val => list_vlans(VLAN)
      };
 
-get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
+get_key(#{key:='vlans from aggr', db := #{links:=Links}, link:=Link}) ->
     Aggr  = maps:get(aggr, Link, 0),
-    Links = maps:get(links, DB),
     VLANs = pipe(
 	      [list_vlans(maps:get(vlan, Link)) 
 	       || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
@@ -165,15 +161,13 @@ get_key(#{key:='vlans from aggr', db:=DB, link:=Link}) ->
       val => lists:join(",", VLANs)
      };
 
-get_key(#{key:='vlans from dev', link:=Link}) ->
+get_key(#{key:='vlans from dev', link := #{vlan:=VLAN}}) ->
     #{
       key => "!vlans-from-dev!",
-      val => flatten_vlans(maps:get(vlan, Link))
+      val => flatten_vlans(VLAN)
      };
 
-get_key(#{key:='vlans from vrf', db:=DB, link:=Link}) ->
-    Tag   = maps:get(tag, Link),
-    Links = maps:get(links, DB),
+get_key(#{key:='vlans from vrf', db := #{links:=Links}, link := #{tag:=Tag}}) ->
     VLANs = [prefix_vlan(maps:get(vlan, Link))
 	     || Link <- Links, Tag=:=maps:get(tag,Link)],
 
@@ -214,25 +208,24 @@ flatten_vlans(VLAN) when is_integer(VLAN) ->
 flatten_vlans(VLANs) when is_list(VLANs) ->
     lists:join(",", [integer_to_list(VLAN) || VLAN <- VLANs]).
 
-build_snippet_using_keys(#{db:=DB, request:=Request} = Args)
+build_snippet_using_keys(#{db := #{links:=Links}, request:=Request} = Args)
   when Request=/=vlan,Request=/='interface vlan'  ->
     BuildFromLink    = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
     BuildAllLinks    = fun(Links) -> lists:map(BuildFromLink, Links) end,
 
-    pipe(maps:get(links, DB),
+    pipe(Links,
 	 [
 	  BuildAllLinks,
-	  % fun lists:merge/1,
 	  fun lists:uniq/1
 	 ]
 	);
 
-build_snippet_using_keys(#{db:=DB, request:=Request} = Args)
+build_snippet_using_keys(#{db := #{links:=Links}, request:=Request} = Args)
   when Request=:=vlan;Request=:='interface vlan' ->
     BuildFromLink    = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
     BuildAllLinks    = fun(Links) -> lists:map(BuildFromLink, Links) end,
 
-    pipe(maps:get(links, DB),
+    pipe(Links,
 	 [
 	  BuildAllLinks,
 	  fun lists:merge/1,
@@ -276,7 +269,7 @@ get_random_ip_addr() ->
       [crypto:rand_uniform(0,255) || Byte <- lists:seq(1,4)],
       [
        fun(Bytes) -> lists:join(".", Bytes) end,
-       fun(Addr)  -> lists:concat(Addr) end,
+       fun lists:concat/1,
        fun(Addr)  -> Addr ++ "/24" end
       ]
      ).
@@ -286,7 +279,7 @@ get_random_mac_addr() ->
       [get_random(2, "abcdef1234567890") || Byte <- lists:seq(1,6)],
       [
        fun(Bytes) -> lists:join(":", Bytes) end,
-       fun(Addr)  -> lists:concat(Addr) end
+       fun lists:concat/1
       ]
      ).
 
