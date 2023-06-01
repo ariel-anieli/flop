@@ -56,7 +56,6 @@ handle_call(#{request:=template_link}, _From, DB) ->
     {reply, get_link_template(), DB};
 
 handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) -> 
-    Shaper   = fun(Link) -> tag_link_with_hash_of_addrs(Link) end,
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
     Contract = maps:get(link, get_contracts()),
     NewArgs  = Args#{
@@ -64,7 +63,7 @@ handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) ->
 		     updater  => Updater,
 		     contract => Contract(UntaggedLink),
 		     faults   => maps:get(link, get_faults()),
-		     shaper   => Shaper
+		     shaper   => fun templates:tag_link_with_hash_of_addrs/1
 		   },
     #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
 

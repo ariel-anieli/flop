@@ -59,7 +59,6 @@ get_addr_contract(Mac) ->
 
 get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End) 
   when map_size(End)==3 ->
-    %get_port_contract(Port) andalso is_string(Dev) andalso is_mac(Addr);
     Contracts = get_contracts(),
     IsConform = fun(Key) ->
 			Check     = maps:get(Key, Contracts),
@@ -100,16 +99,16 @@ get_link_contract(_) ->
 
 get_contracts() -> 
     #{
-      link => fun(Link) -> get_link_contract(Link) end,
-      to   => fun(End)  -> get_endpoint_contract(End) end,
-      from => fun(End)  -> get_endpoint_contract(End) end,
-      net  => fun(Net)  -> get_net_contract(Net) end,
-      tag  => fun(Tag)  -> get_tag_contract(Tag) end,
-      vlan => fun(Vlan) -> get_vlan_contract(Vlan) end,
-      port => fun(Port) -> get_port_contract(Port) end,
-      dev  => fun(Dev)  -> get_dev_contract(Dev) end,
-      addr => fun(Addr) -> get_addr_contract(Addr) end,
-      aggr => fun(Aggr) -> get_port_contract(Aggr) end
+      link => fun get_link_contract/1,
+      to   => fun get_endpoint_contract/1,
+      from => fun get_endpoint_contract/1,
+      net  => fun get_net_contract/1,
+      tag  => fun get_tag_contract/1,
+      vlan => fun get_vlan_contract/1,
+      port => fun get_port_contract/1,
+      dev  => fun get_dev_contract/1, 
+      addr => fun get_addr_contract/1,
+      aggr => fun get_port_contract/1
      }.
 
 get_defaults() ->
