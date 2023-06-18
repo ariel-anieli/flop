@@ -233,20 +233,48 @@ build_snippet_using_keys(#{db := #{links:=Links}, request:=Request} = Args)
 	 ]
 	).
 
+map_key_into_value(#{key:=Key, val:=Val}, Template) -> 
+    re:replace(Template, Key, Val, [{return, list}]).
+
+is_key_in_keyset(GoodKey) ->
+    fun(#{key:=TestKey}) -> TestKey=:=GoodKey end.
+
+add_nets_and_vlans_into_keyset(VLANs, Alt, AltKey) when hd(Alt)>=48, hd(Alt)=<57 ->
+    lists:zipwith(fun(VLAN, Alt) -> #{"!vlan!"=>VLAN, AltKey=>Alt} end, 
+			    VLANs, [Alt], trim);
+add_nets_and_vlans_into_keyset(VLANs, Alts, AltKey) when is_list(hd(Alts)) ->
+    lists:zipwith(fun(VLAN, Alt) -> #{"!vlan!"=>VLAN, AltKey=>Alt} end, 
+		  VLANs, Alts, trim).
+
 map_keyset_into_template(#{keyset:=KS, template:=T,request:=Request})
   when Request=:=vlan;Request=:='interface vlan' ->
-    VinK = fun(#{key:=K,val:=V},T) -> re:replace(T, K, V, [{return, list}]) end,
-    [#{key:=K,val:=Vs}] = lists:filter(fun(#{key:=K}) -> K=:="!vlan!" end, KS),
-    ButVs  = lists:filter(fun(#{key:=K}) -> K=/="!vlan!" end, KS),
-    Mapper = fun(V) -> lists:foldr(VinK, T, [#{key=>K, val=>V} | ButVs]) end,
 
-    lists:map(Mapper, Vs);
+    Alternatives  = #{vlan=>"!net!", 'interface vlan'=>"!ip!"},
+    AltKeyFromRq  = maps:get(Request, Alternatives),
+    IsVLANinKS    = is_key_in_keyset("!vlan!"),
+    IsAltKeyinKS  = is_key_in_keyset(AltKeyFromRq),
+    NotVLANNorAlt = fun(#{key:=K}) -> 
+			    K=/="!vlan!" andalso K=/=AltKeyFromRq end,
+
+    [#{val:=VLANs}] = lists:filter(IsVLANinKS, KS),
+    [#{val:=Alts}]  = lists:filter(IsAltKeyinKS, KS),
+
+    ButVLANs = lists:filter(NotVLANNorAlt, KS),
+    Mapper   = fun(#{"!vlan!":=VLAN, AltKeyFromRq:=Alt}) -> 
+		       lists:foldr(
+			 fun map_key_into_value/2, 
+			 T, 
+			 [#{key=>"!vlan!", val=>VLAN},
+			  #{key=>AltKeyFromRq,  val=>Alt} | ButVLANs]
+			) end,
+
+    AugmentedKS = add_nets_and_vlans_into_keyset(VLANs, Alts, AltKeyFromRq),
+    lists:map(Mapper, AugmentedKS);
 
 map_keyset_into_template(#{keyset:=KS, template:=T, request:=Request}) 
   when Request=/=vlan,Request=/='interface vlan' ->
-    VinK = fun(#{key:=K,val:=V},T) -> re:replace(T, K, V, [{return, list}]) end,
-
-    lists:foldr(VinK, T, KS).
+    
+    lists:foldr(fun map_key_into_value/2, T, KS).
 
 get_db_template(Name) ->
     #{

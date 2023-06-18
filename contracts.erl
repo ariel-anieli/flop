@@ -1,5 +1,5 @@
 -module(contracts).
-
+-define(HEAD_IS_INT(Net), hd(Net)>=48,hd(Net)=<57).
 -export([
 	 get_contracts/0,
 	 get_defaults/0,
@@ -39,8 +39,13 @@ is_mac(String) ->
 get_tag_contract(Tag) ->
     is_valid(is_list(Tag) andalso is_string(Tag)).
 
+get_net_contract(Nets) when is_list(hd(Nets)) ->
+    is_valid([is_valid(is_list(Net) andalso is_net(Net))
+		       || Net<-Nets]);
+get_net_contract(Net) when ?HEAD_IS_INT(Net) ->
+    is_valid(is_list(Net) andalso is_net(Net));
 get_net_contract(Net) ->
-    is_valid(is_list(Net) andalso is_net(Net)).
+    false.
 
 get_vlan_contract(VLAN) when is_integer(VLAN) ->
     is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0]);
@@ -127,7 +132,7 @@ get_faults() ->
       link  => 'Wrong value; for an example, run flop:template_link()',
       to    => 'Wrong value; for an example, run flop:template_link()',
       from  => 'Wrong value; for an example, run flop:template_link()',
-      net   => 'Must be IPv4/Mask; for an example, run flop:template_link()',
+      net   => 'IPv4/Mask, or a list of IPv4/Mask: see flop:template_link()',
       tag   => 'Must be a string',
       vlan  => 'Must be an integer: <4095 and >=0; or a list of integers',
       port  => 'Must be an integer: and >=0',
