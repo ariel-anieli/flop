@@ -123,13 +123,13 @@ handle_call(#{request:='interface ethernet', type:=nxos} = Args, _From, DB) ->
     {reply, #{'interface ethernet'=>Intfs}, DB};
 
 handle_call(#{request:='interface vlan', type:=nxos} = Args, _From, DB) -> 
-    Keys  = [vlan, ip, vrf],
+    Keys  = [vlan, ip, tag, name],
     Intfs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 
     {reply, #{'interface vlan'=>Intfs}, DB};
 
 handle_call(#{request:='route map', type:=nxos} = Args, _From, DB) -> 
-    Keys = [vrf, 'vlans from vrf'],
+    Keys = ['vlans from vrf', tag, name],
     Maps = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 
     {reply, #{maps=>Maps}, DB};

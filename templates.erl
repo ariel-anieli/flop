@@ -41,11 +41,11 @@ get_template(#{type:=nxos, request:='interface ethernet', link:=Link})
 get_template(#{type:=nxos, request:='interface vlan'}) ->
     "interface vlan !vlan!
      no shutdown
-     vrf member !vrf!
+     vrf member !name!_!tag!
      ip address !ip!";
 
 get_template(#{type:=nxos, request:='route map'}) ->
-    "route-map !vrf! permit 10
+    "route-map !name!_!tag! permit 10
      match interface !vlans-from-vrf!";
 
 get_template(#{type:=nxos, request:='split by tag'}) ->
@@ -239,36 +239,99 @@ map_key_into_value(#{key:=Key, val:=Val}, Template) ->
 is_key_in_keyset(GoodKey) ->
     fun(#{key:=TestKey}) -> TestKey=:=GoodKey end.
 
-add_nets_and_vlans_into_keyset(VLANs, Alt, AltKey) when hd(Alt)>=48, hd(Alt)=<57 ->
+add_nets_and_vlans_into_keyset(VLANs, Alt, AltKey, Tags) 
+  when hd(Alt)>=48, hd(Alt)=<57, Tags=:='no tag' ->
     lists:zipwith(fun(VLAN, Alt) -> #{"!vlan!"=>VLAN, AltKey=>Alt} end, 
 			    VLANs, [Alt], trim);
-add_nets_and_vlans_into_keyset(VLANs, Alts, AltKey) when is_list(hd(Alts)) ->
+
+add_nets_and_vlans_into_keyset(VLANs, Alts, AltKey, Tags) 
+  when is_list(hd(Alts)), Tags=:='no tag' ->
     lists:zipwith(fun(VLAN, Alt) -> #{"!vlan!"=>VLAN, AltKey=>Alt} end, 
-		  VLANs, Alts, trim).
+		  VLANs, Alts, trim);
+
+add_nets_and_vlans_into_keyset(VLANs, Alt, AltKey, Tags) 
+  when hd(Alt)>=48, hd(Alt)=<57, is_list(hd(Tags)) ->
+    lists:zipwith3(fun(VLAN, Alt, Tag) -> #{
+					    "!vlan!"=>VLAN, 
+					    "!tag!"=>Tag,
+					    AltKey=>Alt
+					   } end, 
+		   VLANs, [Alt], Tags, trim);
+
+add_nets_and_vlans_into_keyset(VLANs, Alt, AltKey, Tag) 
+  when hd(Alt)>=48, hd(Alt)=<57, is_list(Tag) ->
+    lists:zipwith3(fun(VLAN, Alt, Tag) -> #{
+					    "!vlan!"=>VLAN, 
+					    "!tag!"=>Tag,
+					    AltKey=>Alt
+					   } end, 
+		   VLANs, [Alt], [Tag], trim);
+
+add_nets_and_vlans_into_keyset(VLANs, Alts, AltKey, Tags) 
+  when is_list(hd(Alts)), is_list(hd(Tags)) ->
+    lists:zipwith3(fun(VLAN, Alt, Tag) -> #{
+					    "!vlan!"=>VLAN, 
+					    "!tag!"=>Tag,
+					    AltKey=>Alt
+					   } end, 
+		   VLANs, Alts, Tags, trim);
+add_nets_and_vlans_into_keyset(VLANs, Alts, AltKey, Tag) 
+  when is_list(hd(Alts)), is_list(Tag) ->
+    lists:zipwith3(fun(VLAN, Alt, Tag) -> #{
+					    "!vlan!"=>VLAN, 
+					    "!tag!"=>Tag,
+					    AltKey=>Alt
+					   } end, 
+		   VLANs, Alts, [Tag], trim).
+
+get_tag([#{val:=Tags}]) ->
+    Tags;
+get_tag(_) ->
+    'no tag'.
 
 map_keyset_into_template(#{keyset:=KS, template:=T,request:=Request})
   when Request=:=vlan;Request=:='interface vlan' ->
 
     Alternatives  = #{vlan=>"!net!", 'interface vlan'=>"!ip!"},
-    AltKeyFromRq  = maps:get(Request, Alternatives),
+    AltKeyFromRq  = maps:get(Request, Alternatives, ''),
+    IsTagInKS     = is_key_in_keyset("!tag!"),
     IsVLANinKS    = is_key_in_keyset("!vlan!"),
     IsAltKeyinKS  = is_key_in_keyset(AltKeyFromRq),
-    NotVLANNorAlt = fun(#{key:=K}) -> 
-			    K=/="!vlan!" andalso K=/=AltKeyFromRq end,
-
+    NotVLANNorAlt = fun(#{key:=K}) 
+		       -> K=/="!vlan!" 
+			      andalso K=/="!tag!" 
+			      andalso K=/=AltKeyFromRq end,
+    
     [#{val:=VLANs}] = lists:filter(IsVLANinKS, KS),
+    Tags = get_tag(lists:filter(IsTagInKS, KS)),
     [#{val:=Alts}]  = lists:filter(IsAltKeyinKS, KS),
 
     ButVLANs = lists:filter(NotVLANNorAlt, KS),
-    Mapper   = fun(#{"!vlan!":=VLAN, AltKeyFromRq:=Alt}) -> 
+    Mapper   = fun(#{"!vlan!":=VLAN, AltKeyFromRq:=Alt}) 
+		     when Tags=:='no tag' ->
 		       lists:foldr(
 			 fun map_key_into_value/2, 
 			 T, 
-			 [#{key=>"!vlan!", val=>VLAN},
-			  #{key=>AltKeyFromRq,  val=>Alt} | ButVLANs]
-			) end,
+			 [
+			  #{key=>"!vlan!", val=>VLAN},
+			  #{key=>AltKeyFromRq,  val=>Alt} | ButVLANs
+			 ]);
 
-    AugmentedKS = add_nets_and_vlans_into_keyset(VLANs, Alts, AltKeyFromRq),
+		  (#{"!vlan!":=VLAN, AltKeyFromRq:=Alt, "!tag!":=Tag}) 
+		     when Tags=/='no tag' ->
+		       lists:foldr(
+			 fun map_key_into_value/2, 
+			 T, 
+			 [
+			  #{key=>"!tag!", val=>Tag},
+			  #{key=>"!vlan!", val=>VLAN},
+			  #{key=>AltKeyFromRq,  val=>Alt} | ButVLANs
+			 ])
+		   end,
+
+
+    AugmentedKS = add_nets_and_vlans_into_keyset(
+		    VLANs, Alts, AltKeyFromRq, Tags),
     lists:map(Mapper, AugmentedKS);
 
 map_keyset_into_template(#{keyset:=KS, template:=T, request:=Request}) 
