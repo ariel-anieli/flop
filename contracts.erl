@@ -1,5 +1,9 @@
 -module(contracts).
+
 -define(HEAD_IS_INT(Net), hd(Net)>=48,hd(Net)=<57).
+-define(HEAD_IS_UPPC(Str), hd(Str)>=65,hd(Str)=<90).
+-define(HEAD_IS_LOWC(Str), hd(Str)>=97,hd(Str)=<122).
+
 -export([
 	 get_contracts/0,
 	 get_defaults/0,
@@ -36,8 +40,14 @@ is_net(String) ->
 is_mac(String) ->
     re:run(String, "^([a-f0-9]{2}:){5}[a-f0-9]{2}$", [{capture, none}])==match.
 
+get_tag_contract(Tags) when is_list(hd(Tags)) ->
+    is_valid([is_valid(is_list(Tag) andalso is_string(Tag))
+	      || Tag<-Tags]);
+get_tag_contract(Tag) 
+  when ?HEAD_IS_INT(Tag); ?HEAD_IS_LOWC(Tag); ?HEAD_IS_UPPC(Tag)  ->
+    is_valid(is_list(Tag) andalso is_string(Tag));
 get_tag_contract(Tag) ->
-    is_valid(is_list(Tag) andalso is_string(Tag)).
+    false.
 
 get_net_contract(Nets) when is_list(hd(Nets)) ->
     is_valid([is_valid(is_list(Net) andalso is_net(Net))
@@ -133,7 +143,7 @@ get_faults() ->
       to    => 'Wrong value; for an example, run flop:template_link()',
       from  => 'Wrong value; for an example, run flop:template_link()',
       net   => 'IPv4/Mask, or a list of IPv4/Mask: see flop:template_link()',
-      tag   => 'Must be a string',
+      tag   => 'Must be a string; or a list of strings',
       vlan  => 'Must be an integer: <4095 and >=0; or a list of integers',
       port  => 'Must be an integer: and >=0',
       dev   => 'Must be a string',
