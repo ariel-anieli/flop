@@ -62,17 +62,17 @@ time_in_iso8601() ->
     
 if_valid_shape_newlink(#{matches:=[], request:=Request}) 
   when Request==update;Request==delete ->
-    #{status => 'not found'};
+    #{status => 'not found', link =>[]};
 if_valid_shape_newlink(#{matches:=Links}) 
   when is_list(Links), length(Links)>1 ->
-    #{status => 'more than one match'};
-if_valid_shape_newlink(#{faults:=nofault}) ->
-    #{status => 'not allowed'};
+    #{status => 'more than one match', link => Links};
+if_valid_shape_newlink(#{faults:=nofault, matches:=NotAllowed}) ->
+    #{status => 'not allowed', link => NotAllowed};
 if_valid_shape_newlink(#{matches:=[OldLink], key:=Key, val:=Val}) 
   when map_get(Key,OldLink)==Val ->
-    #{status => 'same value'};
-if_valid_shape_newlink(#{contract:=false, faults:=Faults}) ->
-    #{status => Faults};
+    #{status => 'same value', link => OldLink};
+if_valid_shape_newlink(#{contract:=false, faults:=Faults, matches:=BadLink}) ->
+    #{status => Faults, link => BadLink};
 if_valid_shape_newlink(#{shaper:=Shaper, request:=create}=Args)
   when not is_map_key(matches, Args) ->
     OldDB        = maps:get(db, Args),
@@ -85,7 +85,7 @@ if_valid_shape_newlink(#{shaper:=Shaper, request:=create}=Args)
     if_valid_shape_newlink(maps:merge(Args, NewParams));
 if_valid_shape_newlink(#{matches:=Links, request:=create}) 
   when is_list(Links), length(Links)>0 ->
-    #{status=>'already in db'};
+    #{status=>'already in db', link => Links};
 if_valid_shape_newlink(#{matches:=[], request:=create, link:=TaggedLink}) ->
     #{status => ok, link => TaggedLink};
 if_valid_shape_newlink(#{matches:=[Link], request:=delete}) ->
@@ -111,8 +111,7 @@ update_key_with_val_in_link(Key, Val) ->
 
 get_userid(#{id:=ID}) ->
     ID;
-get_userid(#{is_valid:=IsValid}) ->
-    Link = maps:get(link, IsValid),
+get_userid(#{is_valid := #{link:=Link}}) ->
     maps:get(id, Link).
 
 if_request_is_valid_update_db(#{db:=OldDB, updater:=Updater}=Args) ->
@@ -128,7 +127,8 @@ if_request_is_valid_update_db(#{db:=OldDB, updater:=Updater}=Args) ->
 
     #{
       db     => OldDB#{links:=NewList},
-      status => maps:get(status, IsValid)
+      status => maps:get(status, IsValid),
+      links  => maps:get(link, IsValid)
      }.
 
 update_time_and_id(OldDB, NewID) ->
@@ -154,7 +154,7 @@ save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
 save_db_if_ids_differ(OldDB, NewID, OldID) when NewID==OldID ->
     #{status=>'no diff', db=>OldDB}.
 
-if_newlink_update_list(#{link:=NewLink, updater:=Updater, 
+if_newlink_update_list(#{link:=NewLink, updater:=Updater, status:=ok,
 			 'all but matches':=ButMatches}) ->
     Updater(ButMatches, NewLink);
 if_newlink_update_list(#{status:=Status, oldlist:=OldList}) when Status/=ok ->
