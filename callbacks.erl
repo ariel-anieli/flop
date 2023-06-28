@@ -84,9 +84,11 @@ handle_call(#{request:=update, id:=UserID,
 		     shaper   => update_key_with_val_in_link(Key, Val),
 		     matches  => find_matching_link(OldDB, UserID)
 		   },
-    #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
 
-    {reply, #{db=>NewDB, status=>Status}, NewDB};
+    #{db     := NewDB, 
+      status := Status,
+      links  := Links} = if_request_is_valid_update_db(NewArgs),
+    {reply, #{links=>Links, status=>Status}, NewDB};
 
 handle_call(#{request:=delete, id:=UserID} = Args, From, OldDB) -> 
     Updater = fun(Links, NewLink) -> Links end,
