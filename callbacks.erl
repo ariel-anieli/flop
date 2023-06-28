@@ -65,9 +65,11 @@ handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) ->
 		     faults   => maps:get(link, get_faults()),
 		     shaper   => fun templates:tag_link_with_hash_of_addrs/1
 		   },
-    #{db:=NewDB, status:=Status} = if_request_is_valid_update_db(NewArgs),
 
-    {reply, #{db=>NewDB, status=>Status}, NewDB};
+    #{db     := NewDB, 
+      status := Status,
+      links  := Links} = if_request_is_valid_update_db(NewArgs),
+    {reply, #{links=>Links, status=>Status}, NewDB};
 
 handle_call(#{request:=read}, From, DB) -> 
     {reply, #{db=>DB, status=>ok}, DB};
