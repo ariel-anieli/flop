@@ -173,7 +173,7 @@ get_key(#{key:='vlans from vrf', db := #{links:=Links}, link := #{tag:=Tag}}) ->
 
     #{
       key => "!vlans-from-vrf!",
-      val => lists:join(" ", VLANs)
+      val => lists:join(" ", lists:uniq(VLANs))
      }.
 
 build_from_link(#{keys:=Keys} = Args) ->
