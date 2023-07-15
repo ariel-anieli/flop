@@ -22,6 +22,7 @@
 	 get_page/2,
 	 get_total_pages/1,
 	 mark_page/2,
+	 print_page/1,
 	 save_db_if_ids_differ/3,
 	 if_newlink_update_list/1,
 	 update_key_with_val_in_link/2,
@@ -182,3 +183,21 @@ mark_page(Page, Total) ->
 		    "/", 
 		    integer_to_list(Total)])
      ).
+
+print_page(#{links:=Page, page:=Mark, 
+	     total:=TotalLinks, pages:=TotalPages, 
+	     current:=PageNum} = Args) when PageNum=<TotalPages ->
+    #{
+      status => ok, 
+      extract => maps:remove([current,pages], Args)
+     };
+print_page(#{pages:=TotalPages, current:=PageNum}) when PageNum>TotalPages ->
+    #{
+      status => 'not allowed',
+      extract => #{
+		   asked => PageNum, 
+		   links => [],
+		   pages => TotalPages
+		  }
+     }.
+

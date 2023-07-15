@@ -1,6 +1,7 @@
 -module(callbacks).
 -behaviour(gen_server).
 
+-define(PAGE_LENGTH, 5).
 -define(LOG, logger).
 
 -import(math,[floor/1]).
@@ -19,6 +20,7 @@
     get_page/2,
     get_total_pages/1,
     mark_page/2,
+    print_page/1,
     find_matching_link/2,
     open_db_or_create_from_template/2,
     pipe/2,
@@ -82,11 +84,19 @@ handle_call(#{request:=read}, From, #{links:=Links}=DB)
 
 handle_call(#{request:=read, page:=PageNum}, From, #{links:=Links}=DB) 
   when length(Links)>?PAGE_LENGTH -> 
-    Page    = get_page(Links, PageNum),
-    Total   = get_total_pages(Links),
-    Mark    = mark_page(PageNum, Total),
-    Extract = #{links=>Page, page=>Mark, total=>length(Links)},
-    {reply, #{status=>ok, db=>maps:merge(DB,Extract)}, DB};
+    Page      = get_page(Links, PageNum),
+    Total     = get_total_pages(Links),
+    Mark      = mark_page(PageNum, Total),
+    PrintArgs = #{
+		  links   => Page, 
+		  page    => Mark, 
+		  total   => length(Links),
+		  pages   => Total,
+		  current => PageNum
+		 },
+    
+    #{extract:=Extract, status:=Status} = print_page(PrintArgs),
+    {reply, #{status=>Status, db=>maps:merge(DB,Extract)}, DB};
 
 handle_call(#{request:=update, id:=UserID, 
 	      key:=Key, val:=Val}=Args, From, OldDB) ->
