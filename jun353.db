@@ -1,0 +1,280 @@
+#{'@' => "2023-06-09T10:09:32+02:00",file => "jun353.db",
+  id => "335d4aa2cbdbb40fc738aefe337ae7db",
+  links =>
+      [#{aggr => 1530,
+         from =>
+             #{addr => "04:76:b0:b1:d9:39",dev => "CISN9K-CRT-2",port => 74},
+         id => "fba025c8f8e0311ea6c3701bfc8f6cd7",
+         log =>
+             [#{tag => "IN",until => "2023-05-03T11:11:59+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:35",dev => "CISN9K-CRT-2",
+                      port => 70},
+                until => "2023-04-28T15:01:19+02:00"}],
+         net => "10.2.3.150/29",tag => "IN-SAP4HANA",
+         to => #{addr => "04:d5:90:3f:03:1e",dev => "FGT-3401E",port => 11},
+         vlan => 3530},
+       #{aggr => 1530,
+         from =>
+             #{addr => "04:76:b0:b1:d9:3a",dev => "CISN9K-CRT-2",port => 75},
+         id => "8f13885982a3d4f508bd03fc1e4bee99",
+         log =>
+             [#{tag => "IN",until => "2023-05-03T11:12:23+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:36",dev => "CISN9K-CRT-2",
+                      port => 71},
+                until => "2023-04-28T15:03:27+02:00"}],
+         net => "10.2.3.150/29",tag => "IN-SAP4HANA",
+         to => #{addr => "04:d5:90:3f:03:1e",dev => "FGT-3401E",port => 12},
+         vlan => 3530},
+       #{aggr => 1531,
+         from =>
+             #{addr => "04:76:b0:b1:d9:3b",dev => "CISN9K-CRT-2",port => 76},
+         id => "e328030955313e7b23f7ba2ae2f367d5",
+         log =>
+             [#{tag => "OUT",until => "2023-05-03T11:12:48+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:37",dev => "CISN9K-CRT-2",
+                      port => 72},
+                until => "2023-04-28T15:11:55+02:00"}],
+         net => "10.2.3.158/29",tag => "OUT-SAP4HANA",
+         to => #{addr => "04:d5:90:3f:03:20",dev => "FGT-3401E",port => 13},
+         vlan => 3531},
+       #{aggr => 1531,
+         from =>
+             #{addr => "04:76:b0:b1:d9:3c",dev => "CISN9K-CRT-2",port => 77},
+         id => "23a3a0e3746c7b8856e9b4a2a881b6b3",
+         log =>
+             [#{tag => "OUT",until => "2023-05-03T11:12:59+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:38",dev => "CISN9K-CRT-2",
+                      port => 73},
+                until => "2023-04-28T15:13:59+02:00"}],
+         net => "10.2.3.158/29",tag => "OUT-SAP4HANA",
+         to => #{addr => "04:d5:90:3f:03:20",dev => "FGT-3401E",port => 14},
+         vlan => 3531},
+       #{aggr => 1533,
+         from =>
+             #{addr => "04:76:b0:b1:d9:35",dev => "CISN9K-CRT-2",port => 70},
+         id => "fd6cf4db176f1111719c2760dddcb48d",
+         log =>
+             [#{tag => "OUT",until => "2023-05-03T11:45:58+02:00"},
+              #{aggr => 0,until => "2023-05-02T09:20:48+02:00"},
+              #{until => "2023-05-02T09:17:45+02:00",vlan => 3532}],
+         net => "10.2.2.118/29",tag => "OUT-ROOT",
+         to => #{addr => "04:d5:90:3f:03:16",dev => "FGT-3401E",port => 3},
+         vlan => 3533},
+       #{aggr => 1533,
+         from =>
+             #{addr => "04:76:b0:b1:d9:36",dev => "CISN9K-CRT-2",port => 71},
+         id => "bad292853fca140ce8d87dc5f6d75b6e",
+         log =>
+             [#{tag => "OUT",until => "2023-05-03T11:46:34+02:00"},
+              #{to =>
+                    #{addr => "04:d5:90:3f:03:16",dev => "FGT-3401E",
+                      port => 3},
+                until => "2023-05-02T09:24:41+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:36",dev => "CISN9K-CRT-2",
+                      port => 70},
+                until => "2023-05-02T09:22:39+02:00"},
+              #{aggr => 0,until => "2023-05-02T09:20:25+02:00"}],
+         net => "10.2.2.118/29",tag => "OUT-ROOT",
+         to => #{addr => "04:d5:90:3f:03:16",dev => "FGT-3401E",port => 4},
+         vlan => 3533},
+       #{aggr => 1532,
+         from =>
+             #{addr => "04:76:b0:b1:d9:37",dev => "CISN9K-CRT-2",port => 72},
+         id => "6e67b925528a961a802a4b739f93ef59",
+         log => [#{tag => "IN",until => "2023-05-03T11:48:58+02:00"}],
+         net => "10.2.0.10/29",tag => "IN-ROOT",
+         to => #{addr => "04:d5:90:3f:03:1a",dev => "FGT-3401E",port => 7},
+         vlan => 3532},
+       #{aggr => 1532,
+         from =>
+             #{addr => "04:76:b0:b1:d9:38",dev => "CISN9K-CRT-2",port => 73},
+         id => "e8aade6a14af890024b5d604f6b29a38",
+         log => [#{tag => "IN",until => "2023-05-03T11:49:08+02:00"}],
+         net => "10.2.0.10/29",tag => "IN-ROOT",
+         to => #{addr => "04:d5:90:3f:03:1a",dev => "FGT-3401E",port => 8},
+         vlan => 3532},
+       #{from =>
+             #{addr => "04:76:b0:b1:d9:33",dev => "CISN9K-CRT-2",port => 68},
+         id => "72599e251e4b7bedb26d6fe8b2aaa420",net => "10.77.200.254/22",
+         tag => "IN-ROOT",
+         to =>
+             #{addr => "d2:03:05:e4:d1:37",dev => "AVAC100S3-40G-166",
+               port => 1},
+         vlan => 3535},
+       #{from =>
+             #{addr => "04:76:b0:b1:d9:34",dev => "CISN9K-CRT-2",port => 69},
+         id => "dc5bffe15de98f2b13d282f8e829a21e",
+         log =>
+             [#{net => "10.91.9.0/24",until => "2023-05-03T17:35:51+02:00"}],
+         net => "10.91.9.254/24",tag => "OUT-ROOT",
+         to =>
+             #{addr => "d2:03:05:e4:d1:87",dev => "AVAC100S3-40G-166",
+               port => 5},
+         vlan => 3536},
+       #{aggr => 1534,
+         from =>
+             #{addr => "04:76:b0:b1:d9:3e",dev => "CISN9K-CRT-2",port => 79},
+         id => "2b15d0e9bbb423e6e70f2e1fd3d8b886",
+         log =>
+             [#{tag => "OUT-ROOT",until => "2023-05-15T11:08:36+02:00"},
+              #{tag => "OUT",until => "2023-05-03T11:47:55+02:00"},
+              #{aggr => 0,until => "2023-05-02T11:03:59+02:00"}],
+         net => "10.2.3.138/29",tag => "OUT-ROOT-VEEAM",
+         to => #{addr => "04:d5:90:3f:03:22",dev => "FGT-3401E",port => 16},
+         vlan => 3534},
+       #{aggr => 1534,
+         from =>
+             #{addr => "04:76:b0:b1:d9:3d",dev => "CISN9K-CRT-2",port => 78},
+         id => "35fa59a886fb11a675d98033219151f7",
+         log =>
+             [#{tag => "OUT-ROOT",until => "2023-05-15T11:08:51+02:00"},
+              #{tag => "OUT",until => "2023-05-03T11:48:14+02:00"},
+              #{aggr => 0,until => "2023-05-02T11:03:46+02:00"}],
+         net => "10.2.3.138/29",tag => "OUT-ROOT-VEEAM",
+         to => #{addr => "04:d5:90:3f:03:22",dev => "FGT-3401E",port => 15},
+         vlan => 3534},
+       #{from =>
+             #{addr => "04:76:b0:b1:d9:33",dev => "CISN9K-CRT-2",port => 68},
+         id => "8c1a3ccbebcd6a30cead6d55c05e3f26",
+         log =>
+             [#{net => "10.32.6.17/28",until => "2023-05-15T16:23:04+02:00"}],
+         net => "10.34.0.254/24",tag => "IN-SAP4HANA",
+         to =>
+             #{addr => "d2:03:05:e4:d1:af",dev => "AVAC100S3-40G-166",
+               port => 1},
+         vlan => 3539},
+       #{from =>
+             #{addr => "04:76:b0:b1:d9:34",dev => "CISN9K-CRT-2",port => 69},
+         id => "c733b37941ffeabc6217ef6bc31bc2dc",
+         log =>
+             [#{to =>
+                    #{addr => "d2:03:05:e4:d1:4b",dev => "AVAC100S3-40G-166",
+                      port => 5},
+                until => "2023-05-23T11:11:22+02:00"},
+              #{net => "10.34.0.254/24",until => "2023-05-15T16:22:36+02:00"},
+              #{net => "10.34.0.0/24",until => "2023-05-15T15:55:07+02:00"}],
+         net => "10.32.6.17/28",tag => "OUT-SAP4HANA",
+         to =>
+             #{addr => "d2:03:05:e4:d2:4f",dev => "AVAC100S3-40G-166",
+               port => 9},
+         vlan => 3538},
+       #{from =>
+             #{addr => "04:76:b0:b1:d9:34",dev => "CISN9K-CRT-2",port => 69},
+         id => "fa715a9257880a2764061de1900eebbb",
+         log =>
+             [#{to =>
+                    #{addr => "d2:03:05:e4:d1:9b",dev => "AVAC100S3-40G-166",
+                      port => 5},
+                until => "2023-05-23T11:12:47+02:00"},
+              #{net => "10.47.3.129/29",until => "2023-05-15T15:06:12+02:00"}],
+         net => "10.47.3.129/28",tag => "OUT-ROOT-VEEAM",
+         to =>
+             #{addr => "d2:03:05:e4:d2:63",dev => "AVAC100S3-40G-166",
+               port => 9},
+         vlan => 3537},
+       #{aggr => 1538,
+         from =>
+             #{addr => "04:76:b0:b1:d9:05",dev => "CISN9K-CRT-2",port => 22},
+         id => "e100c4b63dd94c0bc6781a6a33b6db93",
+         log =>
+             [#{tag => "IN-ROOT-FRA2",until => "2023-06-09T09:38:52+02:00"}],
+         net => "10.2.4.10/29",tag => "IN-ROOT",
+         to => #{addr => "e8:1c:ba:a0:02:92",dev => "FGT-3401E-1",port => 7},
+         vlan => 2533},
+       #{aggr => 1538,
+         from =>
+             #{addr => "04:76:b0:b1:d9:06",dev => "CISN9K-CRT-2",port => 23},
+         id => "d9714ce14507c989482abc5ca2267397",
+         log =>
+             [#{tag => "IN-ROOT-FRA2",until => "2023-06-09T09:38:59+02:00"}],
+         net => "10.2.4.10/29",tag => "IN-ROOT",
+         to => #{addr => "e8:1c:ba:a0:02:92",dev => "FGT-3401E-1",port => 8},
+         vlan => 2533},
+       #{aggr => 1537,
+         from =>
+             #{addr => "04:76:b0:b1:d9:03",dev => "CISN9K-CRT-2",port => 20},
+         id => "4ef248c2b165b650a66bcb1718e5f1e6",
+         log =>
+             [#{tag => "OUT-ROOT-FRA2",until => "2023-06-09T09:50:26+02:00"}],
+         net => "10.2.6.94/29",tag => "OUT-ROOT",
+         to => #{addr => "e8:1c:ba:a0:02:8e",dev => "FGT-3401E-1",port => 3},
+         vlan => 2532},
+       #{aggr => 1537,
+         from =>
+             #{addr => "04:76:b0:b1:d9:04",dev => "CISN9K-CRT-2",port => 21},
+         id => "9738b495cedba2c4590288bfb4da6283",
+         log =>
+             [#{tag => "OUT-ROOT-FRA2",until => "2023-06-09T09:50:33+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:04",dev => "CISN9K-CRT-2",
+                      port => 20},
+                until => "2023-05-31T17:58:04+02:00"}],
+         net => "10.2.6.94/29",tag => "OUT-ROOT",
+         to => #{addr => "e8:1c:ba:a0:02:8e",dev => "FGT-3401E-1",port => 4},
+         vlan => 2532},
+       #{aggr => 1535,
+         from =>
+             #{addr => "04:76:b0:b1:d9:07",dev => "CISN9K-CRT-2",port => 24},
+         id => "f931998374cc8a364b3f0fb269813976",
+         log =>
+             [#{tag => "IN-SAP4HANA-FRA2",
+                until => "2023-06-09T10:05:28+02:00"},
+              #{to =>
+                    #{addr => "e8:1c:ba:a0:02:96",dev => "FGT-3401E",
+                      port => 11},
+                until => "2023-05-31T09:06:26+02:00"},
+              #{until => "2023-05-31T09:02:17+02:00",vlan => 3535},
+              #{net => "10.2.3.150/29",until => "2023-05-31T08:59:58+02:00"}],
+         net => "10.2.7.150/29",tag => "IN-SAP4HANA",
+         to => #{addr => "e8:1c:ba:a0:02:96",dev => "FGT-3401E-1",port => 11},
+         vlan => 2530},
+       #{aggr => 1535,
+         from =>
+             #{addr => "04:76:b0:b1:d9:08",dev => "CISN9K-CRT-2",port => 25},
+         id => "68f37dc4e1b1328ac2f268cdab065816",
+         log =>
+             [#{tag => "IN-SAP4HANA-FRA2",
+                until => "2023-06-09T10:05:37+02:00"},
+              #{to =>
+                    #{addr => "e8:1c:ba:a0:02:96",dev => "FGT-3401E-1",
+                      port => 11},
+                until => "2023-05-31T09:05:47+02:00"},
+              #{to =>
+                    #{addr => "e8:1c:ba:a0:02:96",dev => "FGT-3401E",
+                      port => 12},
+                until => "2023-05-31T09:04:47+02:00"},
+              #{until => "2023-05-31T09:02:22+02:00",vlan => 3535},
+              #{net => "10.2.3.150/29",until => "2023-05-31T09:00:03+02:00"},
+              #{from =>
+                    #{addr => "04:76:b0:b1:d9:08",dev => "CISN9K-CRT-2",
+                      port => 24},
+                until => "2023-05-30T17:45:39+02:00"}],
+         net => "10.2.7.150/29",tag => "IN-SAP4HANA",
+         to => #{addr => "e8:1c:ba:a0:02:96",dev => "FGT-3401E-1",port => 12},
+         vlan => 2530},
+       #{aggr => 1536,
+         from =>
+             #{addr => "04:76:b0:b1:d9:09",dev => "CISN9K-CRT-2",port => 26},
+         id => "39826c7aadea77da97b4d4faadcf4184",
+         log =>
+             [#{tag => "OUT-SAP4HANA-FRA2",
+                until => "2023-06-09T10:08:25+02:00"}],
+         net => "10.2.7.158/29",tag => "OUT-SAP4HANA",
+         to => #{addr => "e8:1c:ba:a0:02:98",dev => "FGT-3401E-1",port => 13},
+         vlan => 2531},
+       #{aggr => 1536,
+         from =>
+             #{addr => "04:76:b0:b1:d9:0a",dev => "CISN9K-CRT-2",port => 27},
+         id => "206c994c388de175e5c95e463ed7800c",
+         log =>
+             [#{tag => "OUT-SAP4HANA-FRA2",
+                until => "2023-06-09T10:08:34+02:00"}],
+         net => "10.2.7.158/29",tag => "OUT-SAP4HANA",
+         to => #{addr => "e8:1c:ba:a0:02:98",dev => "FGT-3401E-1",port => 14},
+         vlan => 2531}],
+  name => "JUN353"}.

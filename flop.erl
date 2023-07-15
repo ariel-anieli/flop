@@ -10,6 +10,7 @@
 	 template_db/0,
 	 create/1,
 	 read/0,
+	 read/1,
 	 update/3,
 	 delete/1
 ]).
@@ -33,7 +34,8 @@ save()               -> gen_server:call(?SRV, #{request=>save}).
 template_link()      -> gen_server:call(?SRV, #{request=>template_link}).
 template_db()        -> gen_server:call(?SRV, #{request=>template_db}).
 create(Link)         -> gen_server:call(?SRV, #{request=>create, link=>Link}).
-read()               -> gen_server:call(?SRV, #{request=>read}).
+read()               -> gen_server:call(?SRV, #{request=>read,page=>1}).
+read(Page)           -> gen_server:call(?SRV, #{request=>read,page=>Page}).
 update(ID, Key, Val) -> gen_server:call(?SRV, #{request=>update, 
 						id=>ID,
 						key=>Key,
