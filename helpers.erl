@@ -189,7 +189,7 @@ print_page(#{links:=Page, page:=Mark,
 	     current:=PageNum} = Args) when PageNum=<TotalPages ->
     #{
       status => ok, 
-      extract => maps:remove([current,pages], Args)
+      extract => maps:without([current,pages], Args)
      };
 print_page(#{pages:=TotalPages, current:=PageNum}) when PageNum>TotalPages ->
     #{
