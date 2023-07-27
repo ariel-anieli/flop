@@ -1,0 +1,3 @@
+{application, flop,
+ [{description, "Stores network links as a database; provides CLI snippets of configured links."}]
+}.
