@@ -1,9 +1,10 @@
--module(flop).
+-module(flop_srv).
 -define(SRV, callbacks).
 
 % Database operations
 -export([
-	 start/1,
+	 start_link/0,
+	 load/1,
 	 stop/0,
 	 save/0,
 	 template_link/0,
@@ -28,7 +29,8 @@
 ]).
 
 % Database operations
-start(DB)            -> gen_server:start_link({local, ?SRV}, ?SRV, DB, []).
+start_link()         -> gen_server:start_link({local, ?SRV}, ?SRV, [], []).
+load(DB)             -> gen_server:call(?SRV, #{request=>load, db=>DB}).
 stop()               -> gen_server:call(?SRV, #{request=>stop}).
 save()               -> gen_server:call(?SRV, #{request=>save}).
 template_link()      -> gen_server:call(?SRV, #{request=>template_link}).
