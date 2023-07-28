@@ -50,11 +50,15 @@
 	 code_change/3
 ]).
 
-init(DB) -> 
-    gen_event:start_link({local, ?LOG}),
-    {ok, open_db_or_create_from_template(file:consult(DB), DB)}.
+init([]) ->
+    Time = erlang:system_time(second),
+    {ok, get_db_template(erlang:integer_to_list(Time))}.
 
-handle_call(#{request:=template_db}, _From, DB) -> 
+handle_call(#{request:=load, db:=DBName}, From, OldDB) -> 
+    NewDB = open_db_or_create_from_template(file:consult(DBName), DBName),
+    {reply, NewDB, NewDB};
+
+handle_call(#{request:=template_db}, From, DB) -> 
     Time = erlang:system_time(second),
 
     {reply, get_db_template(erlang:integer_to_list(Time)), DB};
@@ -190,7 +194,6 @@ handle_call(#{request:=save}, _From, OldDB) ->
     {reply, Rslt, maps:get(db, Rslt)};
 
 handle_call(#{request:=stop}, _From, DB) ->
-    %gen_event:stop(?LOG),
     {stop, normal, stopped, DB}.
 
 handle_cast(#{request:=print, cmds:=Cmds}, DB) -> 
