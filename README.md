@@ -5,8 +5,8 @@ Stores network links as a database; provides CLI snippets of configured links.
 ## Database operations
 You may start the server from an existing database, or an empty one:
 ```
-> flop_srv:start("foo").
-> flop_srv:read().
+> flop:start("foo").
+> flop:read().
 #{file => "foo",
   links =>
       [#{from =>
@@ -20,7 +20,7 @@ You may start the server from an existing database, or an empty one:
 ```
 From a template, you may create a link:
 ```
-> Link = flop_srv:template_link().
+> Link = flop:template_link().
 #{from =>
       #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
   net => "12.210.239.42/24",tag => "gwTp",
@@ -28,7 +28,7 @@ From a template, you may create a link:
       #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
   vlan => 3451}
 
-> flop_srv:create(Link).
+> flop:create(Link).
 #{db =>
       #{file => "foo",
         links =>
@@ -51,7 +51,7 @@ From a template, you may create a link:
 ```
 Update a link (using its ID)
 ```
-> flop_srv:update("315", tag, "bar").
+> flop:update("315", tag, "bar").
 #{db =>
       #{file => "foo",
         links =>
@@ -76,7 +76,7 @@ Update a link (using its ID)
 ```
 Delete a link
 ```
-> flop_srv:delete("67b").
+> flop:delete("67b").
 #{db =>
       #{file => "foo",
         links =>
@@ -94,7 +94,7 @@ Delete a link
 ```
 And save the database
 ```
-> flop_srv:save().
+> flop:save().
 #{db =>
       #{'@' => "2023-02-25T14:37:58+01:00",file => "foo",
         id => "65906485474a9d928d5a2e715a83f4b83381479b",
@@ -118,11 +118,12 @@ Using the database, it produces CLI snippets. To date, these Cisco Nexus CLI are
 * `intf_vlan/1`
 * `route_map/1`
 * `vlan/1`
+
 The functions expect the atom `nxos`.
 
-`flop_srv:print/1` prints out the snippets:
+`flop:print/1` prints out the snippets:
 ```
-> flop_srv:print(flop_srv:intf_eth(nxos)).
+> flop:print(flop:intf_eth(nxos)).
 interface ethernet 1/125
      description cx=JtBP;to=zVSGXHf4_89
      switchport mode trunk
