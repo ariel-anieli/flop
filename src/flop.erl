@@ -1,4 +1,4 @@
--module(flop_srv).
+-module(flop).
 -define(SRV, callbacks).
 
 % Database operations

@@ -14,9 +14,9 @@ init([]) ->
 		 strategy  => one_for_one
 		},
     Servers  = #{
-		id    => flop_srv,
-		start => {flop_srv, start_link, []},
-		type  => worker
-	       },
+		 id    => flop,
+		 start => {flop, start_link, []},
+		 type  => worker
+		},
     Children = [Servers],
     {ok, {Strategy, Children}}.
