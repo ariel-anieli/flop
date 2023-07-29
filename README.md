@@ -3,113 +3,103 @@
 Stores network links as a database; provides CLI snippets of configured links.
 
 ## Database operations
-You may start the server from an existing database, or an empty one:
+The application provides `flop`, it acts as a database. You may start `flop` from an existing database:
 ```
-> flop:start("foo").
-> flop:read().
-#{file => "foo",
-  links =>
-      [#{from =>
-             #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
-         id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
-         net => "171.175.170.98/24",tag => "s7vr",
+> application:start(flop).
+ok
+
+> flop:load("foo").
+#{links =>
+      [#{id => "86685741066227ad30072f1c0959c5ed",tag => "X3yb",
+         net => "245.121.74.254/24",vlan => 480,
          to =>
-             #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
-         vlan => 166}],
-  name => "JtBP"}
+             #{port => 40,addr => "58:95:14:9d:ab:ff",dev => "3uK3vJUE"},
+         from =>
+             #{port => 82,addr => "12:8a:4b:48:df:15",dev => "iitwtUF7"}}],
+  name => "2O0a",file => foo}
 ```
 From a template, you may create a link:
 ```
 > Link = flop:template_link().
-#{from =>
-      #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
-  net => "12.210.239.42/24",tag => "gwTp",
+#{tag => "MFDU",net => "223.0.42.113/24",vlan => 400,
   to =>
-      #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
-  vlan => 3451}
+      #{port => 215,addr => "da:de:cb:1b:16:4b",dev => "f7OCJjBW"},
+  from =>
+      #{port => 221,addr => "c2:3b:ae:88:c6:55",dev => "H1SS0dRK"}}
 
 > flop:create(Link).
-#{db =>
-      #{file => "foo",
-        links =>
-            [#{from =>
-                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
-               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
-               net => "171.175.170.98/24",tag => "s7vr",
-               to =>
-                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
-               vlan => 166},
-             #{from =>
-                   #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
-               id => "67bd0e177728f6e9246ab9ec7fd921f8c41f7871",
-               net => "12.210.239.42/24",tag => "gwTp",
-               to =>
-                   #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
-               vlan => 3451}],
-        name => "JtBP"},
+#{links =>
+      #{id => "6df9b6cec6ffdd5979ec5e407d06957f",tag => "MFDU",
+        net => "223.0.42.113/24",vlan => 400,
+        to =>
+            #{port => 215,addr => "da:de:cb:1b:16:4b",dev => "f7OCJjBW"},
+        from =>
+            #{port => 221,addr => "c2:3b:ae:88:c6:55",dev => "H1SS0dRK"}},
   status => ok}
 ```
 Update a link (using its ID)
 ```
-> flop:update("315", tag, "bar").
-#{db =>
-      #{file => "foo",
-        links =>
-            [#{from =>
-                   #{addr => "2d:ca:3a:48:11:96",dev => "OH9YFoFD",port => 43},
-               id => "67bd0e177728f6e9246ab9ec7fd921f8c41f7871",
-               net => "12.210.239.42/24",tag => "gwTp",
-               to =>
-                   #{addr => "b5:13:6a:9b:e8:2b",dev => "4fxT36vE",port => 20},
-               vlan => 3451},
-             #{from =>
-                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
-               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
-               log =>
-                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
-               net => "171.175.170.98/24",tag => "bar",
-               to =>
-                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
-               vlan => 166}],
-        name => "JtBP"},
+> flop:update("6d", tag, "bar").
+#{links =>
+      #{id => "6df9b6cec6ffdd5979ec5e407d06957f",tag => "bar",
+        log =>
+            [#{tag => "MFDU",until => "2023-07-29T19:27:12+02:00"}],
+        net => "223.0.42.113/24",vlan => 400,
+        to =>
+            #{port => 215,addr => "da:de:cb:1b:16:4b",dev => "f7OCJjBW"},
+        from =>
+            #{port => 221,addr => "c2:3b:ae:88:c6:55",dev => "H1SS0dRK"}},
   status => ok}
 ```
 Delete a link
 ```
-> flop:delete("67b").
-#{db =>
-      #{file => "foo",
-        links =>
-            [#{from =>
-                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
-               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
-               log =>
-                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
-               net => "171.175.170.98/24",tag => "bar",
+> flop:read().
+#{status => ok,
+  db =>
+      #{links =>
+            [#{id => "86685741066227ad30072f1c0959c5ed",tag => "X3yb",
+               net => "245.121.74.254/24",vlan => 480,
                to =>
-                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
-               vlan => 166}],
-        name => "JtBP"},
+                   #{port => 40,addr => "58:95:14:9d:ab:ff",dev => "3uK3vJUE"},
+               from =>
+                   #{port => 82,addr => "12:8a:4b:48:df:15",dev => "iitwtUF7"}},
+             #{id => "6df9b6cec6ffdd5979ec5e407d06957f",tag => "bar",
+               log =>
+                   [#{tag => "MFDU",until => "2023-07-29T19:27:12+02:00"}],
+               net => "223.0.42.113/24",vlan => 400,
+               to =>
+                   #{port => 215,addr => "da:de:cb:1b:16:4b",dev => "f7OCJjBW"},
+               from =>
+                   #{port => 221,addr => "c2:3b:ae:88:c6:55",dev => "H1SS0dRK"}}],
+        name => "2O0a",file => foo}}
+
+> flop:delete("86").
+#{links =>
+      #{id => "86685741066227ad30072f1c0959c5ed",tag => "X3yb",
+        net => "245.121.74.254/24",vlan => 480,
+        to =>
+            #{port => 40,addr => "58:95:14:9d:ab:ff",dev => "3uK3vJUE"},
+        from =>
+            #{port => 82,addr => "12:8a:4b:48:df:15",dev => "iitwtUF7"}},
   status => ok}
 ```
 And save the database
 ```
 > flop:save().
-#{db =>
-      #{'@' => "2023-02-25T14:37:58+01:00",file => "foo",
-        id => "65906485474a9d928d5a2e715a83f4b83381479b",
+#{status => ok,
+  db =>
+      #{id => "bc8cee06364712a481145bad443279a3",
         links =>
-            [#{from =>
-                   #{addr => "77:b8:55:e6:3f:b4",dev => "W7hNXuBr",port => 125},
-               id => "315d044abb58db3551bd6953a2ea420430e9d0ec",
+            [#{id => "6df9b6cec6ffdd5979ec5e407d06957f",tag => "bar",
                log =>
-                   [#{tag => "s7vr",until => "2023-02-25T14:35:50+01:00"}],
-               net => "171.175.170.98/24",tag => "bar",
+                   [#{tag => "MFDU",until => "2023-07-29T19:27:12+02:00"}],
+               net => "223.0.42.113/24",vlan => 400,
                to =>
-                   #{addr => "52:c4:75:2b:ed:78",dev => "zVSGXHf4",port => 89},
-               vlan => 166}],
-        name => "JtBP"},
-  status => ok}
+                   #{port => 215,addr => "da:de:cb:1b:16:4b",dev => "f7OCJjBW"},
+               from =>
+                   #{port => 221,addr => "c2:3b:ae:88:c6:55",dev => "H1SS0dRK"}}],
+        name => "2O0a",file => foo,
+        '@' => "2023-07-29T19:30:00+02:00"}}
 ```
 ## CLI snippets
 Using the database, it produces CLI snippets. To date, these Cisco Nexus CLI are implemented: 
