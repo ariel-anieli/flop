@@ -1,8 +1,7 @@
--module(callbacks).
+-module(flop_cb).
 -behaviour(gen_server).
 
 -define(PAGE_LENGTH, 5).
--define(LOG, logger).
 
 -import(math,[floor/1]).
 
