@@ -1,11 +1,6 @@
 -module(helpers).
-
 -define(PAGE_LENGTH, 5).
-
--import(
-   contracts,
-   [get_defaults/0]
-).
+-define(CONTRACT_CHECKER, contract_checker).
 
 -import(
    templates,
@@ -99,7 +94,7 @@ if_valid_shape_newlink(#{matches:=[Link], request:=delete}) ->
 if_valid_shape_newlink(#{matches:=[OldLink], request:=update, 
 			 contract:=true, key:=Key} = Args) 
   when not is_map_key(Key, OldLink) ->
-    DefVal  = maps:get(Key, get_defaults()),
+    DefVal  = ?CONTRACT_CHECKER:get_defval(Key),
     NewLink = OldLink#{Key => DefVal},
 
     if_valid_shape_newlink(Args#{matches := [NewLink]});
