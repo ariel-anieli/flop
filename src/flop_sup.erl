@@ -13,10 +13,17 @@ init([]) ->
     Strategy = #{
 		 strategy  => one_for_one
 		},
-    Servers  = #{
-		 id    => flop,
-		 start => {flop, start_link, []},
-		 type  => worker
-		},
-    Children = [Servers],
+    Children = [
+		#{
+		  id    => contract_checker,
+		  start => {contract_checker, start_link, []},
+		  type  => worker
+		 },
+		#{
+		  id    => flop,
+		  start => {flop, start_link, []},
+		  type  => worker
+		 }
+	       ],
+
     {ok, {Strategy, Children}}.

@@ -2,16 +2,9 @@
 -behaviour(gen_server).
 
 -define(PAGE_LENGTH, 5).
+-define(CONTRACT_CHECKER, contract_checker).
 
 -import(math,[floor/1]).
-
--import(
-   contracts,
-   [
-    get_contracts/0,
-    get_faults/0
-   ]
-  ).
 	
 -import(
    helpers,
@@ -67,12 +60,11 @@ handle_call(#{request:=template_link}, _From, DB) ->
 
 handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) -> 
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
-    Contract = maps:get(link, get_contracts()),
     NewArgs  = Args#{
 		     db       => OldDB,
 		     updater  => Updater,
-		     contract => Contract(UntaggedLink),
-		     faults   => maps:get(link, get_faults()),
+		     contract => ?CONTRACT_CHECKER:is_type(UntaggedLink, link),
+		     faults   => ?CONTRACT_CHECKER:get_fault(link),
 		     shaper   => fun templates:tag_link_with_hash_of_addrs/1
 		   },
 
@@ -104,12 +96,11 @@ handle_call(#{request:=read, page:=PageNum}, From, #{links:=Links}=DB)
 handle_call(#{request:=update, id:=UserID, 
 	      key:=Key, val:=Val}=Args, From, OldDB) ->
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
-    Contract = maps:get(Key, get_contracts(), fun(Val) -> false end),
     NewArgs  = Args#{
 		     db       => OldDB,
 		     updater  => Updater,
-		     contract => Contract(Val),
-		     faults   => maps:get(Key, get_faults(), nofault),
+		     contract => ?CONTRACT_CHECKER:is_type(Val, Key),
+		     faults   => ?CONTRACT_CHECKER:get_fault(Key),
 		     shaper   => update_key_with_val_in_link(Key, Val),
 		     matches  => find_matching_link(OldDB, UserID)
 		   },

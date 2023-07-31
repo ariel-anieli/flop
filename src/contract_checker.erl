@@ -1,14 +1,53 @@
--module(contracts).
+-module(contract_checker).
+-behaviour(gen_server).
 
+-define(SRV, ?MODULE).
 -define(HEAD_IS_INT(Net), hd(Net)>=48,hd(Net)=<57).
 -define(HEAD_IS_UPPC(Str), hd(Str)>=65,hd(Str)=<90).
 -define(HEAD_IS_LOWC(Str), hd(Str)>=97,hd(Str)=<122).
 
 -export([
-	 get_contracts/0,
-	 get_defaults/0,
-	 get_faults/0
-	]).
+	 init/1, 
+	 handle_call/3,
+	 handle_info/2,
+	 terminate/2,
+	 code_change/3
+]).
+
+-export([
+	 start_link/0,
+	 stop/0,
+	 is_type/2,
+	 get_fault/1,
+	 get_defval/1
+]).
+
+start_link()       -> gen_server:start_link({local, ?SRV}, ?MODULE, [], []).
+stop()             -> gen_server:call(?SRV, #{request=>stop}).
+is_type(Item,Type) -> gen_server:call(?SRV, #{request=>'is?', item=>Item, is=>Type}).
+get_fault(Type)    -> gen_server:call(?SRV, #{request=>fault, type=>Type}).
+get_defval(Key)    -> gen_server:call(?SRV, #{request=>defval, key=>Key}).
+     
+
+init([]) ->
+    {ok, []}.
+
+handle_call(#{request:='is?', item:=Item, is:=Type}, From, State) ->
+    Default  = fun(Item) -> false end,
+    Contract = maps:get(Type, get_contracts(), Default),
+    {reply, Contract(Item), State};
+handle_call(#{request:=defval, key:=Key}, From, State) ->
+    {reply, maps:get(Key, get_defaults()), State};
+handle_call(#{request:=fault, type:=Type}, From, State) ->
+    Default = nofault,
+    Fault   = maps:get(Type, get_faults(), Default),
+    {reply, Fault, State};
+handle_call(#{request:=stop}, _From, DB) ->
+    {stop, normal, stopped, DB}.
+
+terminate(Reason, DB)          -> ok.
+handle_info(Info, DB)	       -> {noreply, DB}.
+code_change(OldVsn, DB, Extra) -> {ok, DB}.
 
 is_valid(Term) when is_boolean(Term) -> 
     Term==true;
