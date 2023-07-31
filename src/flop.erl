@@ -1,5 +1,6 @@
 -module(flop).
--define(SRV, callbacks).
+-define(SRV, ?MODULE).
+-define(CALLBACKS, flop_cb).
 
 % Database operations
 -export([
@@ -29,7 +30,7 @@
 ]).
 
 % Database operations
-start_link()         -> gen_server:start_link({local, ?SRV}, ?SRV, [], []).
+start_link()         -> gen_server:start_link({local, ?SRV}, ?CALLBACKS, [], []).
 load(DB)             -> gen_server:call(?SRV, #{request=>load, db=>DB}).
 stop()               -> gen_server:call(?SRV, #{request=>stop}).
 save()               -> gen_server:call(?SRV, #{request=>save}).
