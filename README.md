@@ -3,7 +3,7 @@
 Stores network links as a database; provides CLI snippets of configured links.
 
 ## Database operations
-The application provides `flop`, it acts as a database. You may start `flop` from an existing database:
+The application provides two servers: `contract_checker` & `flop`. The server `flop` acts as a database. You may start the server `flop` from an existing database:
 ```
 > application:start(flop).
 ok
