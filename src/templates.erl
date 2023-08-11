@@ -20,6 +20,8 @@ get_template(#{type:=nxos, request:='desc aggr'}) ->
 get_template(#{type:=nxos, request:='interface port-channel'}) ->
     "interface port-channel !aggr!
      description !desc-aggr!
+     no shutdown
+     switchport
      switchport mode trunk
      switchport trunk allowed vlan !vlans-from-aggr!";
 
@@ -27,6 +29,8 @@ get_template(#{type:=nxos, request:='interface ethernet', link:=Link})
   when not is_map_key(aggr, Link) ->
     "interface ethernet 1/!from-port!
      description !desc!
+     no shutdown
+     switchport
      switchport mode trunk
      switchport trunk allowed vlan !vlans-from-dev!";
 
@@ -34,8 +38,7 @@ get_template(#{type:=nxos, request:='interface ethernet', link:=Link})
   when is_map_key(aggr, Link) ->
     "interface ethernet 1/!from-port!
      description !desc!
-     switchport mode trunk
-     switchport trunk allowed vlan !vlans-from-dev!
+     no shutdown
      channel-group !aggr! mode active";
 
 get_template(#{type:=nxos, request:='interface vlan'}) ->
