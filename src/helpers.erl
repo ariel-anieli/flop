@@ -34,7 +34,11 @@ open_db_or_create_from_template({ok, [DB]}, _) ->
     DB#{links := TaggedLinks};
 
 open_db_or_create_from_template({error, _}, Name) -> 
-    get_db_template(Name).
+    DBTemp = get_db_template(Name),
+    Links  = maps:get(links, DBTemp),
+    ID     = templates:hash(erlang:term_to_binary(Links)),
+  
+    maps:merge(#{id=>ID, '@'=>time_in_iso8601()}, DBTemp).
 
 is_link(Link, UserID) -> 
     ID = maps:get(id, Link),
@@ -138,8 +142,7 @@ update_time_and_id(OldDB, NewID) ->
 
     maps:merge(NewDB, #{id => NewID}).
 
-save_db_if_ids_differ(OldDB, NewID, OldID) when NewID/=OldID ->
-    File   = maps:get(file, OldDB),
+save_db_if_ids_differ(#{file:=File} = OldDB, NewID, OldID) when NewID/=OldID ->
     NewDB  = update_time_and_id(OldDB, NewID),
     Status = pipe(
 	      NewDB,
