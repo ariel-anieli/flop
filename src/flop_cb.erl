@@ -48,7 +48,9 @@ init([]) ->
 
 handle_call(#{request:=load, db:=DBName}, From, OldDB) -> 
     NewDB = open_db_or_create_from_template(file:consult(DBName), DBName),
-    {reply, NewDB, NewDB};
+    NoLinksInOutput = maps:remove(links, NewDB),
+
+    {reply, NoLinksInOutput, NewDB};
 
 handle_call(#{request:=template_db}, From, DB) -> 
     Time = erlang:system_time(second),
@@ -170,18 +172,21 @@ handle_call(#{request:=vlan, type:=nxos} = Args, From, DB) ->
 
     {reply, #{vlan=>VLANs}, DB};
 
-handle_call(#{request:=save}, _From, OldDB) ->
-    Links = maps:get(links, OldDB),
+handle_call(#{request:=save}, _From, #{links:=Links} = OldDB) ->
     NewID = hash(erlang:term_to_binary(Links)),
-    Rslt  = pipe(
-	      OldDB,
-	      [
-	       fun(Map)   -> maps:get(id, Map, "") end,
-	       fun(OldID) -> save_db_if_ids_differ(OldDB, NewID, OldID) end
-	      ]
-	     ),
+    SaveOutput = pipe(
+		   OldDB,
+		   [
+		    fun(Map)   -> maps:get(id, Map, "") end,
+		    fun(OldID) -> save_db_if_ids_differ(OldDB, NewID, OldID) end
+		   ]
+		  ),
 
-    {reply, Rslt, maps:get(db, Rslt)};
+    {NewDB, Status} = maps:take(db, SaveOutput),
+    NoLinksInOutput = maps:remove(links, NewDB),
+    ReplyToRequest  = maps:merge(Status, NoLinksInOutput),
+
+    {reply, ReplyToRequest, NewDB};
 
 handle_call(#{request:=stop}, _From, DB) ->
     {stop, normal, stopped, DB}.
