@@ -1,5 +1,4 @@
 -module(helpers).
--define(PAGE_LENGTH, 5).
 -define(CONTRACT_CHECKER, contract_checker).
 
 -import(
@@ -14,14 +13,15 @@
 	 find_not_matching_links/2,
 	 open_db_or_create_from_template/2,
 	 pipe/2,
-	 get_page/2,
-	 get_total_pages/1,
+	 get_page/3,
+	 get_total_pages/2,
 	 mark_page/2,
 	 print_page/1,
 	 save_db_if_ids_differ/3,
 	 if_newlink_update_list/1,
 	 update_key_with_val_in_link/2,
-	 if_request_is_valid_update_db/1
+	 if_request_is_valid_update_db/1,
+	 print_log_links/2
 ]).
 
 pipe(Arg, Funcs) -> 
@@ -164,15 +164,15 @@ if_newlink_update_list(#{link:=NewLink, updater:=Updater, status:=ok,
 if_newlink_update_list(#{status:=Status, oldlist:=OldList}) when Status/=ok ->
     OldList.
 
-get_page(Links, Page) ->
-    Start = ?PAGE_LENGTH*(Page -1) + 1,
-    lists:sublist(Links, Start, ?PAGE_LENGTH).
+get_page(Links, Page, PageLength) ->
+    Start = PageLength*(Page -1) + 1,
+    lists:sublist(Links, Start, PageLength).
 
-get_total_pages(Links) when length(Links) rem ?PAGE_LENGTH =/=0 ->
-    trunc(floor(length(Links)/?PAGE_LENGTH)) + 1;
+get_total_pages(Links, PageLength) when length(Links) rem PageLength =/=0 ->
+    trunc(floor(length(Links)/PageLength)) + 1;
 
-get_total_pages(Links) when length(Links) rem ?PAGE_LENGTH =:=0 ->
-    trunc(floor(length(Links)/?PAGE_LENGTH)).
+get_total_pages(Links, PageLength) when length(Links) rem PageLength =:=0 ->
+    trunc(floor(length(Links)/PageLength)).
 
 mark_page(Page, Total) ->
     list_to_atom(
@@ -199,3 +199,7 @@ print_page(#{pages:=TotalPages, current:=PageNum}) when PageNum>TotalPages ->
 		  }
      }.
 
+print_log_links(#{links:=Links} = DB, disable) ->
+    DB#{links := [maps:remove(log, Link) || Link <- Links]};
+print_log_links(DB, enable) ->
+    DB.
