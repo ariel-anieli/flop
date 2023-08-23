@@ -1,7 +1,6 @@
 -module(flop_cb).
 -behaviour(gen_server).
 
--define(PAGE_LENGTH, 5).
 -define(CONTRACT_CHECKER, contract_checker).
 
 -import(math,[floor/1]).
@@ -9,8 +8,8 @@
 -import(
    helpers,
    [
-    get_page/2,
-    get_total_pages/1,
+    get_page/3,
+    get_total_pages/2,
     mark_page/2,
     print_page/1,
     find_matching_link/2,
@@ -75,14 +74,23 @@ handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) ->
       links  := Links} = if_request_is_valid_update_db(NewArgs),
     {reply, #{links=>Links, status=>Status}, NewDB};
 
-handle_call(#{request:=read}, From, #{links:=Links}=DB) 
-  when length(Links)=<?PAGE_LENGTH -> 
-    {reply, #{db=>DB, status=>ok}, DB};
+handle_call(#{request := read,
+	      options := #{length := PageLength,
+			   log    := PrintLog}}, From, #{links:=Links}=DB) 
+  when length(Links)=<PageLength -> 
 
-handle_call(#{request:=read, page:=PageNum}, From, #{links:=Links}=DB) 
-  when length(Links)>?PAGE_LENGTH -> 
-    Page      = get_page(Links, PageNum),
-    Total     = get_total_pages(Links),
+    DBForPrinting = helpers:print_log_links(DB, PrintLog),
+    {reply, #{db=>DBForPrinting, status=>ok}, DB};
+
+handle_call(#{
+	      request:=read, 
+	      page:=PageNum, 	      
+	      options := #{length := PageLength,
+			   log    := PrintLog}}, From, #{links:=Links}=DB) 
+  when length(Links)>PageLength -> 
+
+    Page      = get_page(Links, PageNum, PageLength),
+    Total     = get_total_pages(Links, PageLength),
     Mark      = mark_page(PageNum, Total),
     PrintArgs = #{
 		  links   => Page, 
@@ -93,7 +101,9 @@ handle_call(#{request:=read, page:=PageNum}, From, #{links:=Links}=DB)
 		 },
     
     #{extract:=Extract, status:=Status} = print_page(PrintArgs),
-    {reply, #{status=>Status, db=>maps:merge(DB,Extract)}, DB};
+    MergeDBAndExt = maps:merge(DB,Extract),
+    DBForPrinting = helpers:print_log_links(MergeDBAndExt, PrintLog),
+    {reply, #{status=>Status, db=>DBForPrinting}, DB};
 
 handle_call(#{request:=update, id:=UserID, 
 	      key:=Key, val:=Val}=Args, From, OldDB) ->

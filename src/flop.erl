@@ -13,6 +13,7 @@
 	 create/1,
 	 read/0,
 	 read/1,
+	 read/2,
 	 update/3,
 	 delete/1
 ]).
@@ -29,6 +30,12 @@
 	 vlan/1
 ]).
 
+get_defopts() ->
+    #{
+      length => 5,
+      log    => disable
+     }.
+
 % Database operations
 start_link()         -> gen_server:start_link({local, ?SRV}, ?CALLBACKS, [], []).
 load(DB)             -> gen_server:call(?SRV, #{request=>load, db=>DB}).
@@ -37,8 +44,23 @@ save()               -> gen_server:call(?SRV, #{request=>save}).
 template_link()      -> gen_server:call(?SRV, #{request=>template_link}).
 template_db()        -> gen_server:call(?SRV, #{request=>template_db}).
 create(Link)         -> gen_server:call(?SRV, #{request=>create, link=>Link}).
-read()               -> gen_server:call(?SRV, #{request=>read,page=>1}).
-read(Page)           -> gen_server:call(?SRV, #{request=>read,page=>Page}).
+
+read()               -> gen_server:call(?SRV, #{request=>read,
+						page=>1,
+						options=>get_defopts()}).
+
+read(Page) when is_integer(Page) -> 
+    gen_server:call(?SRV, #{request=>read,page=>Page,options=>get_defopts()});
+read(Options) when is_map(Options) ->
+    DefOptions  = get_defopts(),
+    UserOptions = maps:merge(DefOptions, Options),
+    gen_server:call(?SRV, #{request=>read,page=>1,options=>UserOptions}).
+
+read(Page, Options) when is_integer(Page), is_map(Options) ->
+    DefOptions  = get_defopts(),
+    UserOptions = maps:merge(DefOptions, Options),
+    gen_server:call(?SRV, #{request=>read,page=>Page,options=>UserOptions}).
+
 update(ID, Key, Val) -> gen_server:call(?SRV, #{request=>update, 
 						id=>ID,
 						key=>Key,
