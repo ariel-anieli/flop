@@ -201,5 +201,9 @@ print_page(#{pages:=TotalPages, current:=PageNum}) when PageNum>TotalPages ->
 
 print_log_links(#{links:=Links} = DB, disable) ->
     DB#{links := [maps:remove(log, Link) || Link <- Links]};
-print_log_links(DB, enable) ->
-    DB.
+print_log_links(#{links:=Links} = DB, enable) ->
+    DB;
+print_log_links(#{log:=Log} = Link, disable) ->
+    maps:remove(log, Link);
+print_log_links(Links, disable) when is_list(Links) ->
+    [maps:remove(log, Link) || Link <- Links].

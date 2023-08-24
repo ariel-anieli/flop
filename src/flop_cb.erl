@@ -120,7 +120,10 @@ handle_call(#{request:=update, id:=UserID,
     #{db     := NewDB, 
       status := Status,
       links  := Links} = if_request_is_valid_update_db(NewArgs),
-    {reply, #{links=>Links, status=>Status}, NewDB};
+
+    LogRemovedInLinks = helpers:print_log_links(Links, disable),
+
+    {reply, #{links=>LogRemovedInLinks, status=>Status}, NewDB};
 
 handle_call(#{request:=delete, id:=UserID} = Args, From, OldDB) -> 
     Updater = fun(Links, NewLink) -> Links end,
