@@ -21,7 +21,7 @@ clean:
 %.beam: %.erl
 	$(ERLC) -W0 -o $(BIN_DIR)/ $^
 
-.SILENT: 
+.SILENT: help
 help:
 	echo "make all: compile all Erlang modules."
 	echo "make clean: clean up the compiled modules."
