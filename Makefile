@@ -16,7 +16,7 @@ run: $(BIN)
 	$(ERLR) -pa $(BIN_DIR)/
 
 clean:
-	rm -f $(BIN_DIR)/*
+	rm -f $(BIN_DIR)/*.beam
 
 %.beam: %.erl
 	$(ERLC) -W0 -o $(BIN_DIR)/ $^
