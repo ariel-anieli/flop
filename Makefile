@@ -21,7 +21,7 @@ run: $(BIN) flop.app
 clean:
 	rm -f $(BIN_DIR)/*.beam
 
-flop.app: $(BIN)
+%.app: $(BIN)
 	$(PERL) -i -pe 's/(?<=modules, \[).*(?=\])/$(MOD)/' $(BIN_DIR)/$@
 
 %.beam: %.erl
