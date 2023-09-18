@@ -11,7 +11,7 @@ vpath %.app  $(BIN_DIR)
 
 SRC := $(wildcard $(SRC_DIR)/*.erl)
 BIN := $(patsubst $(SRC_DIR)/%.erl,%.beam,$(SRC))
-MOD := $(shell echo $(BIN) | sed -e 's/\.beam//g; s/ \(.\)/, \1/g')
+MOD := $(shell echo $(BIN) | $(PERL) -pe 's/\.beam//g; s/ (?<=\w)/, /g')
 
 all: $(BIN) flop.app
 
