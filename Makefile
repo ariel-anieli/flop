@@ -5,6 +5,8 @@ PERL ?= /usr/bin/perl
 SRC_DIR := src
 BIN_DIR := ebin
 
+.SUFFIXES: .erl .app .beam
+
 vpath %.erl  $(SRC_DIR)
 vpath %.beam $(BIN_DIR)
 vpath %.app  $(BIN_DIR)
