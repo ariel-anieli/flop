@@ -15,9 +15,9 @@ vpath %.app  $(BIN_DIR)
 .SUFFIXES:
 .SUFFIXES: .erl .app .beam
 
-all: $(BIN) flop.app
+all: flop.app
 
-run: $(BIN) flop.app
+run: flop.app
 	$(ERLR) -pa $(BIN_DIR)/
 
 clean:
