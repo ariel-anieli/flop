@@ -12,9 +12,6 @@ vpath %.erl  $(SRC_DIR)
 vpath %.beam $(BIN_DIR)
 vpath %.app  $(BIN_DIR)
 
-.SUFFIXES:
-.SUFFIXES: .erl .app .beam
-
 all: flop.app
 
 run: flop.app
@@ -34,6 +31,8 @@ help:
 	echo "make clean: clean up the compiled modules."
 	echo "make run: run REPL with the compiled modules."
 
+.DEFAULT_GOAL := all
 .SILENT: help
 .PHONY: clean help run
-.AUTO_GOAL: all
+.SUFFIXES:
+.SUFFIXES: .erl .app .beam
