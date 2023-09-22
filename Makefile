@@ -3,6 +3,7 @@ ERLR ?= /usr/bin/erl
 PERL ?= /usr/bin/perl
 
 APPLICATION ?= flop.app
+DESCRIPTION ?= "Provides CLI snippets of configured links"
 SRC_DIR     := src
 BIN_DIR     := ebin
 
@@ -16,13 +17,23 @@ vpath %.app  $(BIN_DIR)
 all: $(APPLICATION)
 
 run: $(APPLICATION)
-	$(ERLR) -pa $(BIN_DIR)/ -eval "application:start($(basename $<))"
+	$(ERLR) -pa $(BIN_DIR)/ -eval "application:start($(basename $(<F)))"
 
 clean:
 	rm -f $(BIN_DIR)/*.beam
 
+%.app: BIN_LIST := $(BIN:%.beam=%)
 %.app: $(BIN)
-	$(PERL) -i -pe 's/(?<=modules, \[).*(?=\])/$(MOD)/' $(BIN_DIR)/$@
+	$(file >  $@, {application, $(basename $(@F)), [)
+	$(file >> $@, {description, $(DESCRIPTION)},)
+	$(file >> $@, {vsn, "0.1.0"},)
+	$(file >> $@, {modules, [$(MOD)]},)
+	$(file >> $@, {registered, [$(filter $(basename $(@F))_sup,$(BIN_LIST))]},)
+	$(file >> $@, {applications, [kernel, stdlib]},)
+	$(file >> $@, {mod, {$(filter $(basename $(@F))_app,$(BIN_LIST)), []}})
+	$(file >> $@, ]}.)
+
+	mv $@ $(BIN_DIR)/
 
 %.beam: %.erl
 	$(ERLC) -W0 -o $(BIN_DIR)/ $^
