@@ -2,8 +2,9 @@ ERLC ?= /usr/bin/erlc
 ERLR ?= /usr/bin/erl
 PERL ?= /usr/bin/perl
 
-SRC_DIR := src
-BIN_DIR := ebin
+APPLICATION ?= flop.app
+SRC_DIR     := src
+BIN_DIR     := ebin
 
 BIN := $(patsubst $(SRC_DIR)/%.erl,%.beam,$(wildcard $(SRC_DIR)/*.erl))
 MOD := $(shell echo $(BIN) | sed -e 's/\.beam//g; s/ \(.\)/, \1/g')
@@ -12,10 +13,10 @@ vpath %.erl  $(SRC_DIR)
 vpath %.beam $(BIN_DIR)
 vpath %.app  $(BIN_DIR)
 
-all: flop.app
+all: $(APPLICATION)
 
-run: flop.app
-	$(ERLR) -pa $(BIN_DIR)/
+run: $(APPLICATION)
+	$(ERLR) -pa $(BIN_DIR)/ -eval "application:start($(basename $<))"
 
 clean:
 	rm -f $(BIN_DIR)/*.beam
@@ -32,7 +33,7 @@ help:
 	echo "make run: run REPL with the compiled modules."
 
 .DEFAULT_GOAL := all
-.SILENT: help
-.PHONY: clean help run
+.SILENT:   help
+.PHONY:    clean help run
 .SUFFIXES:
 .SUFFIXES: .erl .app .beam
