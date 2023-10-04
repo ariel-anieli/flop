@@ -20,7 +20,7 @@ run: $(APPLICATION)
 	$(ERLR) -pa $(BIN_DIR)/ -eval "application:start($(basename $(<F)))"
 
 clean:
-	rm -f $(BIN_DIR)/*.beam
+	rm -rf $(BIN_DIR)/
 
 %.app: BIN_LIST := $(BIN:%.beam=%)
 %.app: $(BIN)
@@ -35,8 +35,11 @@ clean:
 
 	@mv $@ $(BIN_DIR)/
 
-%.beam: %.erl
-	$(ERLC) -W0 -o $(BIN_DIR)/ $^
+%.beam: %.erl | $(BIN_DIR)
+	$(ERLC) -W0 -o $|/ $^
+
+$(BIN_DIR):
+	@mkdir $@
 
 help:
 	@echo "make all: compile all Erlang modules."
