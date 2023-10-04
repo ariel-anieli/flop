@@ -33,18 +33,17 @@ clean:
 	$(file >> $@, {mod, {$(filter $(basename $(@F))_app,$(BIN_LIST)), []}})
 	$(file >> $@, ]}.)
 
-	mv $@ $(BIN_DIR)/
+	@mv $@ $(BIN_DIR)/
 
 %.beam: %.erl
 	$(ERLC) -W0 -o $(BIN_DIR)/ $^
 
 help:
-	echo "make all: compile all Erlang modules."
-	echo "make clean: clean up the compiled modules."
-	echo "make run: run REPL with the compiled modules."
+	@echo "make all: compile all Erlang modules."
+	@echo "make clean: clean up the compiled modules."
+	@echo "make run: run REPL with the compiled modules."
 
 .DEFAULT_GOAL := all
-.SILENT:   help
 .PHONY:    clean help run
 .SUFFIXES:
 .SUFFIXES: .erl .app .beam
