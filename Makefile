@@ -1,6 +1,5 @@
-ERLC ?= /usr/bin/erlc
-ERLR ?= /usr/bin/erl
-PERL ?= /usr/bin/perl
+ERLC ?= $(shell whereis erlc | cut -d' ' -f2)
+ERLR ?= $(shell whereis erl  | cut -d' ' -f2)
 
 APPLICATION ?= flop.app
 DESCRIPTION ?= "Provides CLI snippets of configured links"
