@@ -1,6 +1,8 @@
 -module(flop).
 -define(SRV, ?MODULE).
 -define(CALLBACKS, flop_cb).
+-define(DEF_OPTS, #{length=>5, log=>disable}).
+-define(LOAD_OPTS(Options), maps:merge(?DEF_OPTS, Options)).
 
 % Database operations
 -export([
@@ -30,12 +32,6 @@
 	 vlan/1
 ]).
 
-get_defopts() ->
-    #{
-      length => 5,
-      log    => disable
-     }.
-
 % Database operations
 start_link()         -> gen_server:start_link({local, ?SRV}, ?CALLBACKS, [], []).
 load(DB)             -> gen_server:call(?SRV, #{request=>load, db=>DB}).
@@ -45,27 +41,23 @@ template_link()      -> gen_server:call(?SRV, #{request=>template_link}).
 template_db()        -> gen_server:call(?SRV, #{request=>template_db}).
 create(Link)         -> gen_server:call(?SRV, #{request=>create, link=>Link}).
 
-read()               -> gen_server:call(?SRV, #{request=>read,
-						page=>1,
-						options=>get_defopts()}).
+read() -> 
+    gen_server:call(?SRV, #{request=>read,page=>1,options=>?DEF_OPTS}).
 
 read(Page) when is_integer(Page) -> 
-    gen_server:call(?SRV, #{request=>read,page=>Page,options=>get_defopts()});
+    gen_server:call(?SRV, #{request=>read,page=>Page,options=>?DEF_OPTS});
+
 read(Options) when is_map(Options) ->
-    DefOptions  = get_defopts(),
-    UserOptions = maps:merge(DefOptions, Options),
-    gen_server:call(?SRV, #{request=>read,page=>1,options=>UserOptions}).
+    gen_server:call(?SRV, #{request=>read,page=>1,options=>?LOAD_OPTS(Options)}).
 
 read(Page, Options) when is_integer(Page), is_map(Options) ->
-    DefOptions  = get_defopts(),
-    UserOptions = maps:merge(DefOptions, Options),
-    gen_server:call(?SRV, #{request=>read,page=>Page,options=>UserOptions}).
+    gen_server:call(?SRV, #{request=>read,page=>Page,options=>?LOAD_OPTS(Options)}).
 
 update(ID, Key, Val) -> gen_server:call(?SRV, #{request=>update, 
 						id=>ID,
 						key=>Key,
 						val=>Val}).
-delete(ID)           -> gen_server:call(?SRV, #{request=>delete, id=>ID}).
+delete(ID)         -> gen_server:call(?SRV, #{request=>delete, id=>ID}).
 
 % CLI translators
 description(Type)  -> gen_server:call(?SRV, #{request=>description,
