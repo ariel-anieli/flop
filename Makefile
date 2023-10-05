@@ -21,7 +21,7 @@ run: $(APPLICATION)
 clean:
 	rm -rf $(BIN_DIR)/
 
-%.app: BIN_LIST := $(BIN:%.beam=%)
+%.app: BIN_LIST := $(patsubst %.beam,%,$(BIN))
 %.app: $(BIN)
 	$(file >  $@, {application, $(basename $(@F)), [)
 	$(file >> $@, {description, $(DESCRIPTION)},)
