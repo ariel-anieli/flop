@@ -16,7 +16,7 @@ vpath %.app  $(BIN_DIR)
 all: $(APPLICATION)
 
 run: $(APPLICATION)
-	$(ERLR) -pa $|/ -eval "application:start($(basename $(<F)))"
+	$(ERLR) -pa $(BIN_DIR) -eval "application:start($(basename $(<F)))"
 
 clean:
 	rm -rf $(BIN_DIR)
