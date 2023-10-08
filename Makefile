@@ -16,10 +16,10 @@ vpath %.app  $(BIN_DIR)
 all: $(APPLICATION)
 
 run: $(APPLICATION)
-	$(ERLR) -pa $(BIN_DIR)/ -eval "application:start($(basename $(<F)))"
+	$(ERLR) -pa $|/ -eval "application:start($(basename $(<F)))"
 
 clean:
-	rm -rf $(BIN_DIR)/
+	rm -rf $(BIN_DIR)
 
 %.app: BIN_LIST := $(patsubst %.beam,%,$(BIN))
 %.app: $(BIN)
@@ -32,10 +32,10 @@ clean:
 	$(file >> $@, {mod, {$(filter $(basename $(@F))_app,$(BIN_LIST)), []}})
 	$(file >> $@, ]}.)
 
-	@mv $@ $(BIN_DIR)/
+	@mv $@ $(BIN_DIR)
 
 %.beam: %.erl | $(BIN_DIR)
-	$(ERLC) -W0 -o $|/ $^
+	$(ERLC) -W0 -o $| $^
 
 $(BIN_DIR):
 	@mkdir $@
