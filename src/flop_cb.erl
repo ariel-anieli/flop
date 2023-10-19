@@ -35,10 +35,7 @@
 -export([
 	 init/1, 
 	 handle_call/3,
-	 handle_cast/2,
-	 handle_info/2,
-	 terminate/2,
-	 code_change/3
+	 handle_cast/2
 ]).
 
 init([]) ->
@@ -210,9 +207,5 @@ handle_cast(#{request:=print, cmds:=Cmds}, DB) ->
     io:format("~s~n", [Text]),
 
     {noreply, DB}.
-
-terminate(Reason, DB)          -> ok.
-handle_info(Info, DB)	       -> {noreply, DB}.
-code_change(OldVsn, DB, Extra) -> {ok, DB}.
 
 
