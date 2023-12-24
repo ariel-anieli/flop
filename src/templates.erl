@@ -383,12 +383,16 @@ get_random(Length, CharSet) ->
       [], lists:seq(1, Length)
      ).
 
+-spec get_random_endpoint_link() -> map().
+
 get_random_endpoint_link() ->
     #{
       dev  => get_random_str(8),
       port => crypto:rand_uniform(1, 255),
       addr => get_random_mac_addr()
      }.
+
+-spec tag_link_with_hash_of_addrs(map()) -> map().
 
 tag_link_with_hash_of_addrs(#{from:=From, to:=To} = Link) ->
     FromAddr = maps:get(addr, From),
@@ -398,6 +402,8 @@ tag_link_with_hash_of_addrs(#{from:=From, to:=To} = Link) ->
     HashXOR  = hash(crypto:exor(hash(FromStr), hash(ToStr))),
 
     Link#{id => HashXOR}.
+
+-spec hash(string()) -> string().
 
 hash(Term) ->
     pipe(
