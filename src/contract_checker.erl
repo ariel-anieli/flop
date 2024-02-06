@@ -6,13 +6,7 @@
 -define(HEAD_IS_UPPC(Str), hd(Str)>=65,hd(Str)=<90).
 -define(HEAD_IS_LOWC(Str), hd(Str)>=97,hd(Str)=<122).
 
--export([
-	 init/1, 
-	 handle_call/3,
-	 handle_info/2,
-	 terminate/2,
-	 code_change/3
-]).
+-export([init/1, handle_call/3]).
 
 -export([
 	 start_link/0,
@@ -44,10 +38,6 @@ handle_call(#{request:=fault, type:=Type}, From, State) ->
     {reply, Fault, State};
 handle_call(#{request:=stop}, _From, DB) ->
     {stop, normal, stopped, DB}.
-
-terminate(Reason, DB)          -> ok.
-handle_info(Info, DB)	       -> {noreply, DB}.
-code_change(OldVsn, DB, Extra) -> {ok, DB}.
 
 is_valid(Term) when is_boolean(Term) -> 
     Term==true;
