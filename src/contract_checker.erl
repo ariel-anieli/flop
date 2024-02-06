@@ -43,7 +43,7 @@ is_valid(Term) when is_boolean(Term) ->
     Term==true;
 	     
 is_valid(Terms) when is_list(Terms) -> 
-    lists:all(fun(Term) -> Term==true end, Terms).
+    lists:foldl(fun(Term, Acc) -> Acc==true andalso Term==true end, true, Terms).
 
 is_string(String) when is_list(String) ->
     re:run(String, "^[a-z0-9A-Z\-]+$", [{capture, none}])==match;
@@ -69,28 +69,34 @@ is_net(String) ->
 is_mac(String) ->
     re:run(String, "^([a-f0-9]{2}:){5}[a-f0-9]{2}$", [{capture, none}])==match.
 
+is_vlan(VLAN) ->
+    is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0]).
+
+is_ipv4_cidr(Net) ->
+    is_valid(is_list(Net) andalso is_net(Net)).
+
+is_tag(Tag) ->
+    is_valid(is_list(Tag) andalso is_string(Tag)).
+
 get_tag_contract(Tags) when is_list(hd(Tags)) ->
-    is_valid([is_valid(is_list(Tag) andalso is_string(Tag))
-	      || Tag<-Tags]);
+    is_valid([is_tag(Tag) || Tag<-Tags]);
 get_tag_contract(Tag) 
-  when ?HEAD_IS_INT(Tag); ?HEAD_IS_LOWC(Tag); ?HEAD_IS_UPPC(Tag)  ->
-    is_valid(is_list(Tag) andalso is_string(Tag));
+  when ?HEAD_IS_INT(Tag); ?HEAD_IS_LOWC(Tag); ?HEAD_IS_UPPC(Tag) ->
+    is_tag(Tag);
 get_tag_contract(Tag) ->
     false.
 
 get_net_contract(Nets) when is_list(hd(Nets)) ->
-    is_valid([is_valid(is_list(Net) andalso is_net(Net))
-		       || Net<-Nets]);
+    is_valid([is_ipv4_cidr(Net) || Net<-Nets]);
 get_net_contract(Net) when ?HEAD_IS_INT(Net) ->
-    is_valid(is_list(Net) andalso is_net(Net));
+    is_ipv4_cidr(Net);
 get_net_contract(Net) ->
     false.
 
 get_vlan_contract(VLAN) when is_integer(VLAN) ->
-    is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0]);
+    is_vlan(VLAN);
 get_vlan_contract(VLANs) when is_list(VLANs) ->
-    is_valid([is_valid([is_integer(VLAN), VLAN<4095, VLAN>=0])
-	      || VLAN <- VLANs]).
+    is_valid([is_vlan(VLAN) || VLAN <- VLANs]).
 
 get_port_contract(Port) ->
     is_valid([is_integer(Port), Port>=0]).
