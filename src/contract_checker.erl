@@ -17,26 +17,26 @@
 ]).
 
 start_link()       -> gen_server:start_link({local, ?SRV}, ?MODULE, [], []).
-stop()             -> gen_server:call(?SRV, #{request=>stop}).
-is_type(Item,Type) -> gen_server:call(?SRV, #{request=>'is?', item=>Item, is=>Type}).
-get_fault(Type)    -> gen_server:call(?SRV, #{request=>fault, type=>Type}).
-get_defval(Key)    -> gen_server:call(?SRV, #{request=>defval, key=>Key}).
+stop()             -> gen_server:call(?SRV, #{req=>stop}).
+is_type(Item,Type) -> gen_server:call(?SRV, #{req=>'is?', item=>Item, is=>Type}).
+get_fault(Type)    -> gen_server:call(?SRV, #{req=>fault, type=>Type}).
+get_defval(Key)    -> gen_server:call(?SRV, #{req=>defval, key=>Key}).
      
 
 init([]) ->
     {ok, []}.
 
-handle_call(#{request:='is?', item:=Item, is:=Type}, From, State) ->
+handle_call(#{req:='is?', item:=Item, is:=Type}, From, State) ->
     Default  = fun(Item) -> false end,
     Contract = maps:get(Type, get_contracts(), Default),
     {reply, Contract(Item), State};
-handle_call(#{request:=defval, key:=Key}, From, State) ->
+handle_call(#{req:=defval, key:=Key}, From, State) ->
     {reply, maps:get(Key, get_defaults()), State};
-handle_call(#{request:=fault, type:=Type}, From, State) ->
+handle_call(#{req:=fault, type:=Type}, From, State) ->
     Default = nofault,
     Fault   = maps:get(Type, get_faults(), Default),
     {reply, Fault, State};
-handle_call(#{request:=stop}, _From, DB) ->
+handle_call(#{req:=stop}, _From, DB) ->
     {stop, normal, stopped, DB}.
 
 is_valid(Term) when is_boolean(Term) -> 
