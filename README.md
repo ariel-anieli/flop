@@ -1,6 +1,7 @@
 # Flop #
 
-Stores network links as a database; provides CLI snippets of configured links.
+Stores network links in a text-formatted database; provides CLI snippets of
+configured links.
 
 ## Database operations
 You may start the server `flop` from an existing database:
