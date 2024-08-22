@@ -13,6 +13,17 @@ vpath %.erl  $(SRC_DIR)
 vpath %.beam $(BIN_DIR)
 vpath %.app  $(BIN_DIR)
 
+define describe-application
+{application, $(basename $(@F)), [
+{description, $(DESCRIPTION)},
+{vsn, "0.1.0"},
+{modules, [$(MOD)]},
+{registered, [$(filter $(basename $(@F))_sup,$(BIN_LIST))]},
+{applications, [kernel, stdlib]},
+{mod, {$(filter $(basename $(@F))_app,$(BIN_LIST)), []}}
+]}.
+endef
+
 all: $(APPLICATION)
 
 run: $(APPLICATION)
@@ -23,14 +34,7 @@ clean:
 
 %.app: BIN_LIST := $(patsubst %.beam,%,$(BIN))
 %.app: $(BIN)
-	$(file >  $@, {application, $(basename $(@F)), [)
-	$(file >> $@, {description, $(DESCRIPTION)},)
-	$(file >> $@, {vsn, "0.1.0"},)
-	$(file >> $@, {modules, [$(MOD)]},)
-	$(file >> $@, {registered, [$(filter $(basename $(@F))_sup,$(BIN_LIST))]},)
-	$(file >> $@, {applications, [kernel, stdlib]},)
-	$(file >> $@, {mod, {$(filter $(basename $(@F))_app,$(BIN_LIST)), []}})
-	$(file >> $@, ]}.)
+	$(file >  $@, $(describe-application))
 
 	@mv $@ $(BIN_DIR)
 
