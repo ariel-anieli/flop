@@ -210,7 +210,7 @@ merge_snippets_if_needed(#{request:=Request})
   when Request=/=vlan,Request=/='interface vlan' ->
     fun(Snippet) -> Snippet end.
 
-build_snippet_using_keys(#{db := #{links:=Links}, request:=Request} = Args) ->
+build_snippet_using_keys(#{db := #{links:=Links}, request:=_Request} = Args) ->
     BuildFromLink = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
     BuildAllLinks = fun(Links) -> lists:map(BuildFromLink, Links) end,
     MergeIfNeeded = merge_snippets_if_needed(Args),
@@ -352,7 +352,7 @@ get_link_template() ->
 
 get_random_ip_addr() ->
     pipe(
-      [crypto:rand_uniform(0,255) || Byte <- lists:seq(1,4)],
+      [crypto:rand_uniform(0,255) || _Byte <- lists:seq(1,4)],
       [
        fun(Bytes) -> lists:join(".", Bytes) end,
        fun lists:concat/1,
@@ -362,7 +362,7 @@ get_random_ip_addr() ->
 
 get_random_mac_addr() ->
     pipe(
-      [get_random(2, "abcdef1234567890") || Byte <- lists:seq(1,6)],
+      [get_random(2, "abcdef1234567890") || _Byte <- lists:seq(1,6)],
       [
        fun(Bytes) -> lists:join(":", Bytes) end,
        fun lists:concat/1

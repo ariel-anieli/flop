@@ -182,8 +182,8 @@ mark_page(Page, Total) ->
 		    integer_to_list(Total)])
      ).
 
-print_page(#{links:=Page, page:=Mark, 
-	     total:=TotalLinks, pages:=TotalPages, 
+print_page(#{links:=_Page, page:=_Mark,
+	     total:=_TotalLinks, pages:=TotalPages,
 	     current:=PageNum} = Args) when PageNum=<TotalPages ->
     #{
       status => ok, 
@@ -201,9 +201,9 @@ print_page(#{pages:=TotalPages, current:=PageNum}) when PageNum>TotalPages ->
 
 print_log_links(#{links:=Links} = DB, disable) ->
     DB#{links := [maps:remove(log, Link) || Link <- Links]};
-print_log_links(#{links:=Links} = DB, enable) ->
+print_log_links(#{links:=_Links} = DB, enable) ->
     DB;
-print_log_links(#{log:=Log} = Link, disable) ->
+print_log_links(#{log:=_Log} = Link, disable) ->
     maps:remove(log, Link);
 print_log_links(Links, disable) when is_list(Links) ->
     [maps:remove(log, Link) || Link <- Links].

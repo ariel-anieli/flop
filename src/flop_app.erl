@@ -11,8 +11,8 @@ start_result({ok, Pid}) ->
 start_result(Other) ->
     {error, Other}.
 
-start(Type, Args) ->
+start(_Type, _Args) ->
     start_result(flop_sup:start_link()).
 
-stop(State) ->
+stop(_State) ->
     ok.

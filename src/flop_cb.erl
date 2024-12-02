@@ -42,13 +42,13 @@ init([]) ->
     Time = erlang:system_time(second),
     {ok, get_db_template(erlang:integer_to_list(Time))}.
 
-handle_call(#{request:=load, db:=DBName}, From, OldDB) -> 
+handle_call(#{request:=load, db:=DBName}, _From, _OldDB) ->
     NewDB = open_db_or_create_from_template(file:consult(DBName), DBName),
     NoLinksInOutput = maps:remove(links, NewDB),
 
     {reply, NoLinksInOutput, NewDB};
 
-handle_call(#{request:=template_db}, From, DB) -> 
+handle_call(#{request:=template_db}, _From, DB) ->
     Time = erlang:system_time(second),
 
     {reply, get_db_template(erlang:integer_to_list(Time)), DB};
@@ -73,18 +73,18 @@ handle_call(#{request:=create, link:=UntaggedLink} = Args, _From, OldDB) ->
 
 handle_call(#{request := read,
 	      options := #{length := PageLength,
-			   log    := PrintLog}}, From, #{links:=Links}=DB) 
+			   log    := PrintLog}}, _From, #{links:=Links}=DB)
   when length(Links)=<PageLength -> 
 
     DBForPrinting = helpers:print_log_links(DB, PrintLog),
     {reply, #{db=>DBForPrinting, status=>ok}, DB};
 
 handle_call(#{
-	      request:=read, 
+	      request:=read,
 	      page:=PageNum, 	      
 	      options := #{length := PageLength,
-			   log    := PrintLog}}, From, #{links:=Links}=DB) 
-  when length(Links)>PageLength -> 
+			   log    := PrintLog}}, _From, #{links:=Links}=DB)
+  when length(Links)>PageLength ->
 
     Page      = get_page(Links, PageNum, PageLength),
     Total     = get_total_pages(Links, PageLength),
@@ -103,7 +103,7 @@ handle_call(#{
     {reply, #{status=>Status, db=>DBForPrinting}, DB};
 
 handle_call(#{request:=update, id:=UserID, 
-	      key:=Key, val:=Val}=Args, From, OldDB) ->
+	      key:=Key, val:=Val}=Args, _From, OldDB) ->
     Updater  = fun(Links, NewLink) -> lists:append(Links, [NewLink]) end,
     NewArgs  = Args#{
 		     db       => OldDB,
@@ -122,8 +122,8 @@ handle_call(#{request:=update, id:=UserID,
 
     {reply, #{links=>LogRemovedInLinks, status=>Status}, NewDB};
 
-handle_call(#{request:=delete, id:=UserID} = Args, From, OldDB) -> 
-    Updater = fun(Links, NewLink) -> Links end,
+handle_call(#{request:=delete, id:=UserID} = Args, _From, OldDB) ->
+    Updater = fun(Links, _NewLink) -> Links end,
     NewArgs = Args#{
 		    db      => OldDB, 
 		    updater => Updater,
@@ -141,7 +141,7 @@ handle_call(#{request:=description, type:=nxos} = Args, _From, DB) ->
 
     {reply, #{'description'=>Descs}, DB};
 
-handle_call(#{request:='interface port-channel', type:=nxos}=Args, From, DB) ->
+handle_call(#{request:='interface port-channel', type:=nxos}=Args, _From, DB) ->
     Keys  = ['desc aggr', aggr, 'vlans from aggr'],
     Links = maps:get(links, DB),
     
@@ -170,13 +170,13 @@ handle_call(#{request:='route map', type:=nxos} = Args, _From, DB) ->
 
     {reply, #{maps=>Maps}, DB};
 
-handle_call(#{request:='split by tag', type:=nxos} = Args, From, DB) -> 
+handle_call(#{request:='split by tag', type:=nxos} = Args, _From, DB) ->
     Keys  = [name, tag],
     Zones = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 
     {reply, #{splits=>Zones}, DB};
 
-handle_call(#{request:=vlan, type:=nxos} = Args, From, DB) -> 
+handle_call(#{request:=vlan, type:=nxos} = Args, _From, DB) ->
     Keys  = [vlan, name, net],
     VLANs = build_snippet_using_keys(Args#{keys=>Keys, db=>DB}),
 

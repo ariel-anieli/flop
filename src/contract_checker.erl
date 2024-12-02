@@ -26,13 +26,13 @@ get_defval(Key)    -> gen_server:call(?SRV, #{req=>defval, key=>Key}).
 init([]) ->
     {ok, []}.
 
-handle_call(#{req:='is?', item:=Item, is:=Type}, From, State) ->
-    Default  = fun(Item) -> false end,
+handle_call(#{req:='is?', item:=Item, is:=Type}, _From, State) ->
+    Default  = fun(_) -> false end,
     Contract = maps:get(Type, get_contracts(), Default),
     {reply, Contract(Item), State};
-handle_call(#{req:=defval, key:=Key}, From, State) ->
+handle_call(#{req:=defval, key:=Key}, _From, State) ->
     {reply, maps:get(Key, get_defaults()), State};
-handle_call(#{req:=fault, type:=Type}, From, State) ->
+handle_call(#{req:=fault, type:=Type}, _From, State) ->
     Default = nofault,
     Fault   = maps:get(Type, get_faults(), Default),
     {reply, Fault, State};
@@ -83,14 +83,14 @@ get_tag_contract(Tags) when is_list(hd(Tags)) ->
 get_tag_contract(Tag) 
   when ?HEAD_IS_INT(Tag); ?HEAD_IS_LOWC(Tag); ?HEAD_IS_UPPC(Tag) ->
     is_tag(Tag);
-get_tag_contract(Tag) ->
+get_tag_contract(_Tag) ->
     false.
 
 get_net_contract(Nets) when is_list(hd(Nets)) ->
     is_valid([is_ipv4_cidr(Net) || Net<-Nets]);
 get_net_contract(Net) when ?HEAD_IS_INT(Net) ->
     is_ipv4_cidr(Net);
-get_net_contract(Net) ->
+get_net_contract(_Net) ->
     false.
 
 get_vlan_contract(VLAN) when is_integer(VLAN) ->
@@ -107,7 +107,7 @@ get_dev_contract(Dev) ->
 get_addr_contract(Mac) ->
     is_mac(Mac).
 
-get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End) 
+get_endpoint_contract(#{addr:=_Addr, dev:=_Dev, port:=_Port} = End)
   when map_size(End)==3 ->
     Contracts = get_contracts(),
     IsConform = fun(Key) ->
@@ -121,7 +121,7 @@ get_endpoint_contract(#{addr:=Addr, dev:=Dev, port:=Port} = End)
 get_endpoint_contract(_) ->
     false.
 
-get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan}=Link)
+get_link_contract(#{from:=_From, to:=_To, net:=_Net, tag:=_Tag, vlan:=_Vlan}=Link)
   when map_size(Link)==5  ->
     Contracts = get_contracts(),
     IsConform = fun(Key) ->
@@ -132,8 +132,8 @@ get_link_contract(#{from:=From, to:=To, net:=Net, tag:=Tag, vlan:=Vlan}=Link)
 
     is_valid([IsConform(Key) || Key <- maps:keys(Link)]);
 
-get_link_contract(#{from:=From, to:=To, net:=Net, 
-		    tag:=Tag, aggr:=Aggr, vlan:=Vlan}=Link)
+get_link_contract(#{from:=_From, to:=_To, net:=_Net,
+		    tag:=_Tag, aggr:=_Aggr, vlan:=_Vlan}=Link)
   when map_size(Link)==6  ->
     Contracts = get_contracts(),
     IsConform = fun(Key) ->
