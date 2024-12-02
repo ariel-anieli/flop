@@ -343,7 +343,7 @@ get_db_template(Name) ->
 
 get_link_template() ->
     #{
-      vlan => crypto:rand_uniform(0, 4095),
+      vlan => 1+ rand:uniform(4094),
       net  => get_random_ip_addr(),
       tag  => get_random_str(4),
       from => get_random_endpoint_link(),
@@ -352,7 +352,7 @@ get_link_template() ->
 
 get_random_ip_addr() ->
     pipe(
-      [crypto:rand_uniform(0,255) || _Byte <- lists:seq(1,4)],
+      [1 + rand:uniform(254) || _ <- lists:seq(1,4)],
       [
        fun(Bytes) -> lists:join(".", Bytes) end,
        fun lists:concat/1,
@@ -379,14 +379,14 @@ get_random(Length, CharSet) ->
 
     lists:foldl(
       fun(_, Acc) ->
-	      [lists:nth(crypto:rand_uniform(1, MaxLength), CharSet)] ++ Acc end,
+	      [lists:nth(rand:uniform(MaxLength), CharSet)] ++ Acc end,
       [], lists:seq(1, Length)
      ).
 
 get_random_endpoint_link() ->
     #{
       dev  => get_random_str(8),
-      port => crypto:rand_uniform(1, 255),
+      port => rand:uniform(255),
       addr => get_random_mac_addr()
      }.
 

@@ -3,8 +3,6 @@
 
 -define(CONTRACT_CHECKER, contract_checker).
 
--import(math,[floor/1]).
-	
 -import(
    helpers,
    [
