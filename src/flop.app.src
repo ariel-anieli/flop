@@ -1,0 +1,22 @@
+{application, flop,
+ [
+  {description, "Provides CLI snippets of configured links"},
+  {vsn, "0.1.0"},
+  {registered, [flop_sup]},
+  {mod, {flop_app, []}},
+  {applications,
+   [
+    kernel,
+    stdlib
+   ]},
+  {env, []},
+  {modules, [contract_checker,
+	     flop_app,
+	     flop_cb,
+	     flop,
+	     flop_sup,
+	     helpers,
+	     templates]},
+  {licenses, ["Apache-2.0"]},
+  {links, []}
+ ]}.
