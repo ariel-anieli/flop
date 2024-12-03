@@ -6,7 +6,7 @@
 -define(HEAD_IS_UPPC(Str), hd(Str)>=65,hd(Str)=<90).
 -define(HEAD_IS_LOWC(Str), hd(Str)>=97,hd(Str)=<122).
 
--export([init/1, handle_call/3]).
+-export([init/1, handle_call/3, handle_cast/2]).
 
 -export([
 	 start_link/0,
@@ -38,6 +38,9 @@ handle_call(#{req:=fault, type:=Type}, _From, State) ->
     {reply, Fault, State};
 handle_call(#{req:=stop}, _From, DB) ->
     {stop, normal, stopped, DB}.
+
+handle_cast(_, DB) ->
+    {noreply, DB}.
 
 is_valid(Term) when is_boolean(Term) -> 
     Term==true;

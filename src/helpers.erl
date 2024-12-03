@@ -25,7 +25,7 @@
 ]).
 
 pipe(Arg, Funcs) -> 
-    lists:foldl(fun(Func, Arg) -> Func(Arg) end, Arg, Funcs).
+    lists:foldl(fun(Func, Acc) -> Func(Acc) end, Arg, Funcs).
 
 open_db_or_create_from_template({ok, [DB]}, _) ->
     Links       = maps:get(links, DB),

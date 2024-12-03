@@ -9,7 +9,7 @@
 ]).
 
 pipe(Arg, Funcs) -> 
-    lists:foldl(fun(Func, Arg) -> Func(Arg) end, Arg, Funcs).
+    lists:foldl(fun(Func, Acc) -> Func(Acc) end, Arg, Funcs).
 
 get_template(#{type:=nxos, request:=description}) ->
     "cx=!name!;to=!to-dev!_!to-port!";
@@ -120,8 +120,8 @@ get_key(#{key:='to port', link := #{to:=To}}) ->
 get_key(#{key:='to aggr port', link:=Link, db := #{links:=Links}}) -> 
     GetPort = fun(#{to := #{port:=Port}}) -> Port end,
     Aggr    = maps:get(aggr, Link, 0),
-    Ports   = [integer_to_list(GetPort(Link))
-	       || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
+    Ports   = [integer_to_list(GetPort(L))
+	       || L <- Links, Aggr=:=maps:get(aggr,Link,0)],
 
     #{
       key => "!to-aggr-port!",
@@ -151,8 +151,8 @@ get_key(#{key:=vlan, link := #{vlan:=VLAN}}) ->
 get_key(#{key:='vlans from aggr', db := #{links:=Links}, link:=Link}) ->
     Aggr  = maps:get(aggr, Link, 0),
     VLANs = pipe(
-	      [list_vlans(maps:get(vlan, Link)) 
-	       || Link <- Links, Aggr=:=maps:get(aggr,Link,0)],
+	      [list_vlans(maps:get(vlan, L))
+	       || L <- Links, Aggr=:=maps:get(aggr,Link,0)],
 	      [
 	       fun lists:merge/1,
 	       fun lists:sort/1,
@@ -212,7 +212,7 @@ merge_snippets_if_needed(#{request:=Request})
 
 build_snippet_using_keys(#{db := #{links:=Links}, request:=_Request} = Args) ->
     BuildFromLink = fun(Link)  -> build_from_link(Args#{link=>Link}) end,
-    BuildAllLinks = fun(Links) -> lists:map(BuildFromLink, Links) end,
+    BuildAllLinks = fun(Lks) -> lists:map(BuildFromLink, Lks) end,
     MergeIfNeeded = merge_snippets_if_needed(Args),
     pipe(Links,
 	 [
