@@ -3,6 +3,8 @@
 Stores network links in a text-formatted database; provides CLI snippets of
 configured links.
 
+The compilation requires [rebar3](https://rebar3.org/docs/getting-started/).
+
 ## Database operations
 You may start the server `flop` from an existing database:
 ```
@@ -88,6 +90,7 @@ Using the database, it produces CLI snippets. To date, these Cisco Nexus CLI are
 * `description/1`
 * `intf_eth/1`
 * `intf_vlan/1`
+* `intf_prt_chnl/1`
 * `route_map/1`
 * `vlan/1`
 
