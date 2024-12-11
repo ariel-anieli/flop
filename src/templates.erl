@@ -38,7 +38,6 @@ get_template(#{type:=nxos, request:='interface ethernet', link:=Link})
   when is_map_key(aggr, Link) ->
     "interface ethernet 1/!from-port!
      description !desc!
-     no switchport
      no shutdown
      channel-group !aggr! mode active";
 
